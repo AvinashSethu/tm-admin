@@ -1,6 +1,7 @@
 "use client";
 import LongDialogBox from "@/src/components/LongDialogBox/LongDialogBox";
 import StyledSelect from "@/src/components/StyledSelect/StyledSelect";
+import SubjectContext from "@/src/app/context/SubjectContext";
 import {
   Accordion,
   AccordionDetails,
@@ -13,7 +14,7 @@ import {
   Typography,
 } from "@mui/material";
 import * as XLSX from "xlsx";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { sanitizeQuestions } from "@/src/lib/sanitizeQuestion";
 import QuestionCard from "@/src/components/QuestionCard/QuestionCard";
 import { Close, ExpandMore, Visibility } from "@mui/icons-material";
@@ -22,6 +23,7 @@ import PreviewStepper from "./PreviewStepper";
 import ErrorQuestionCard from "./ErrorQuestionCard";
 import NoDataFound from "@/src/components/NoDataFound/NoDataFound";
 import { enqueueSnackbar } from "notistack";
+import { useContext } from "react";
 
 export default function BulkImport({ subjectTitle, isOpen, close }) {
   const fileInputRef = useRef(null);
@@ -34,6 +36,7 @@ export default function BulkImport({ subjectTitle, isOpen, close }) {
   const [isOpenAccordion, setIsOpenAccordion] = useState(false);
   const [questions, setQuestions] = useState([]);
   const [error, setError] = useState("");
+  const { fetchSubject } = useContext(SubjectContext); // Use context
 
   const previewDialogOpen = (question) => {
     console.log(question);
@@ -103,6 +106,7 @@ export default function BulkImport({ subjectTitle, isOpen, close }) {
         });
         close();
       }
+      fetchSubject();
     } catch (err) {
       enqueueSnackbar("Upload failed.", {
         variant: "error",
