@@ -21,7 +21,7 @@ export function sanitizeQuestions(rows, subjectID) {
     const type = String(row["Type"] || "")
       .trim()
       .toUpperCase();
-    row["Level"] === "" ? qErrors.push("Level is required") : qErrors.push("");
+    row["Level"] === "" && qErrors.push("Level is required");
     const rawLevel = Number(row["Level"]);
     const difficultyLevel = Number.isFinite(rawLevel) ? rawLevel : NaN;
     const solution = String(row["Solution"] || "").trim();
