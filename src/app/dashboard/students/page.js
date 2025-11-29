@@ -2,37 +2,68 @@
 import CustomPagination from "@/src/components/CustomPagination/CustomPagination";
 import FilterSideNav from "@/src/components/FilterSideNav/FilterSideNav";
 import Header from "@/src/components/Header/Header";
-import { Add, FilterAlt } from "@mui/icons-material";
-import { Button, MenuItem, Pagination, Stack, Typography } from "@mui/material";
+import StudentsHeader from "./Components/StudentsHeader";
+import {
+  Add,
+  FilterAlt,
+  Group,
+  VerifiedUser,
+  CheckCircle,
+} from "@mui/icons-material";
+import { Button, Stack, Typography, TablePagination } from "@mui/material";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { apiFetch } from "@/src/lib/apiFetch";
-import StudentCard from "@/src/components/StudentCard/StudentCard";
+import StudentCard from "./Components/StudentCard";
 import UserCardSkeleton from "@/src/components/UserCardSkeleton/UserCardSkeleton";
 import NoDataFound from "@/src/components/NoDataFound/NoDataFound";
-
-// export const metadata = {
-//   title:"Students",
-// };
+import SecondaryCard from "@/src/components/SecondaryCard/SecondaryCard";
 
 export default function Students() {
   const router = useRouter();
   const page = router.query;
-  const totalPages = 10;
-  const [currentPage, setCurrentPage] = useState(Number(page) || 1);
+  // const totalPages = 10; // Removed hardcoded
+  const [currentPage, setCurrentPage] = useState(0); // TablePagination is 0-indexed
+  const [rowsPerPage, setRowsPerPage] = useState(50);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [stats, setStats] = useState({ total: 0, verified: 0, active: 0 });
   const [isLoading, setIsLoading] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
   const [filters, setFilters] = useState({});
   const [studentList, setStudentList] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+
   const filtersConfig = [
     {
-      name: "difficulty",
-      label: "Difficulty",
+      name: "status",
+      label: "Status",
+      type: "chip",
       options: [
-        {
-          label: "All",
-          value: "All",
-        },
+        { label: "All", value: "" },
+        { label: "Active", value: "active", color: "#4CAF50" },
+        { label: "Deactivated", value: "deactivated", color: "#F44336" },
+      ],
+    },
+    {
+      name: "gender",
+      label: "Gender",
+      type: "chip",
+      options: [
+        { label: "All", value: "" },
+        { label: "Male", value: "Male", color: "#2196F3" },
+        { label: "Female", value: "Female", color: "#E91E63" },
+        { label: "Other", value: "Other", color: "#9C27B0" },
+      ],
+    },
+    {
+      name: "emailVerified",
+      label: "Email Verified",
+      type: "chip",
+      options: [
+        { label: "All", value: "" },
+        { label: "Verified", value: "true", color: "#4CAF50" },
+        { label: "Unverified", value: "false", color: "#FF9800" },
       ],
     },
   ];
@@ -53,57 +84,65 @@ export default function Students() {
 
   const fetchStudentList = async () => {
     setIsLoading(true);
-    await apiFetch(
+    const url = new URL(
       `${process.env.NEXT_PUBLIC_BASE_URL}/api/users/get-all-users`
-    ).then((data) => {
+    );
+    if (searchQuery) {
+      url.searchParams.append("search", searchQuery);
+    }
+    if (filters.status) url.searchParams.append("status", filters.status);
+    if (filters.gender) url.searchParams.append("gender", filters.gender);
+    if (filters.emailVerified)
+      url.searchParams.append("emailVerified", filters.emailVerified);
+
+    url.searchParams.append("page", currentPage + 1); // Backend expects 1-indexed
+    url.searchParams.append("limit", rowsPerPage);
+
+    await apiFetch(url.toString()).then((data) => {
       if (data.success) {
         setStudentList(data.data);
+        if (data.pagination) {
+          setTotalPages(data.pagination.totalPages);
+          setTotalItems(data.pagination.totalItems);
+          setStats({
+            total: data.pagination.totalItems,
+            verified: data.pagination.totalVerified,
+            active: data.pagination.totalActive,
+          });
+        }
       }
       setIsLoading(false);
     });
   };
-  useEffect(() => {
-    fetchStudentList();
-    setCurrentPage(Number(page) || 1);
-  }, [page]);
 
-  const handlePageChange = (newPage) => {
+  useEffect(() => {
+    const delayDebounceFn = setTimeout(() => {
+      fetchStudentList();
+    }, 500);
+
+    return () => clearTimeout(delayDebounceFn);
+  }, [currentPage, rowsPerPage, searchQuery, filters]);
+
+  const handleChangePage = (event, newPage) => {
     setCurrentPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setCurrentPage(0);
   };
 
   return (
     <Stack padding="20px" gap="20px">
-      <Header
-        title="Students"
-        search
-        button={[
-          <Button
-            key="Add"
-            variant="contained"
-            startIcon={<Add />}
-            // onClick={dialogOpen}
-            sx={{
-              backgroundColor: "var(--primary-color)",
-              textTransform: "none",
-            }}
-            disableElevation
-          >
-            Students
-          </Button>,
-          <Button
-            key="Add"
-            variant="contained"
-            endIcon={<FilterAlt />}
-            onClick={filterOpen}
-            sx={{
-              backgroundColor: "var(--primary-color)",
-              textTransform: "none",
-            }}
-            disableElevation
-          >
-            Filter
-          </Button>,
-        ]}
+      <StudentsHeader
+        searchQuery={searchQuery}
+        onSearchChange={(e) => setSearchQuery(e.target.value)}
+        onFilterClick={filterOpen}
+        onAddClick={() => {}}
+        stats={stats}
+        isLoading={isLoading}
+        hasActiveFilters={Object.values(filters).some((v) => v)}
+        onClearFilters={() => setFilters({})}
       />
       <FilterSideNav
         isOpen={isOpen}
@@ -111,7 +150,10 @@ export default function Students() {
         filtersConfig={filtersConfig}
         setFilters={setFilters}
         filters={filters}
-        // onApply={handleApplyFilters}
+        onApply={() => {
+          fetchStudentList();
+          setIsOpen(false);
+        }}
       />
       <Stack
         sx={{
@@ -125,14 +167,6 @@ export default function Students() {
         }}
       >
         <Stack gap="15px" flexDirection="row" flexWrap="wrap">
-          {/* {!isLoading
-            ? studentList.length > 0 &&
-              studentList.map((item, index) => (
-                <StudentCard key={index} user={item} />
-              ))
-            : Array.from({ length: 5 }).map((_, index) => (
-                <UserCardSkeleton key={index} />
-              ))} */}
           {!isLoading ? (
             studentList.length > 0 ? (
               studentList.map((item, index) => (
@@ -160,15 +194,14 @@ export default function Students() {
             marginTop: "auto",
           }}
         >
-          <Typography
-            sx={{ fontFamily: "Lato", fontSize: "13px", fontWeight: "400" }}
-          >
-            Total 85 items
-          </Typography>
-          <CustomPagination
-            count={totalPages}
+          <TablePagination
+            component="div"
+            count={totalItems}
             page={currentPage}
-            onPageChange={handlePageChange}
+            onPageChange={handleChangePage}
+            rowsPerPage={rowsPerPage}
+            onRowsPerPageChange={handleChangeRowsPerPage}
+            rowsPerPageOptions={[10, 25, 50, 100]}
           />
         </Stack>
       </Stack>

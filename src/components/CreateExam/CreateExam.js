@@ -8,18 +8,30 @@ import ExamSettings from "./Components/ExamSettings";
 import ExamStudents from "./Components/ExamStudents";
 import Header from "../Header/Header";
 import { useParams } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { apiFetch } from "@/src/lib/apiFetch";
 
 export default function CreateExam({ exam, setExam }) {
   const params = useParams();
   const examID = params.examID;
+  const [examAttempts, setExamAttempts] = useState([]);
+  const [questionList, setQuestionList] = useState([]);
+
+  const setSections = (updater) => {
+    setExam((prev) => {
+      const currentSections = prev.questionSection || [];
+      const newSections =
+        typeof updater === "function" ? updater(currentSections) : updater;
+      return { ...prev, questionSection: newSections };
+    });
+  };
+
   const totalQuestions = exam?.questionSection?.reduce(
     (total, section) => total + (section.questions?.length || 0),
     0
   );
 
-  const getExam = () => {
+  const getExam = useCallback(() => {
     apiFetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/exam/${examID}`).then(
       (data) => {
         if (data.success) {
@@ -29,16 +41,25 @@ export default function CreateExam({ exam, setExam }) {
         }
       }
     );
-  };
+  }, [examID, setExam]);
 
   useEffect(() => {
     getExam();
-  }, []);
+  }, [getExam]);
 
   const tabs = [
     {
       label: "Questions",
-      content: <ExamQuestions type="group" isLive={exam.isLive} />,
+      content: (
+        <ExamQuestions
+          type="group"
+          isLive={exam.isLive}
+          sections={exam.questionSection || []}
+          setSections={setSections}
+          questionList={questionList}
+          setQuestionList={setQuestionList}
+        />
+      ),
     },
     {
       label: "Settings",
@@ -51,7 +72,16 @@ export default function CreateExam({ exam, setExam }) {
         />
       ),
     },
-    { label: "Students", content: <ExamStudents /> },
+    {
+      label: "Analytics",
+      content: (
+        <ExamStudents
+          showStudentList={false}
+          examAttempts={examAttempts}
+          setExamAttempts={setExamAttempts}
+        />
+      ),
+    },
   ];
 
   return (

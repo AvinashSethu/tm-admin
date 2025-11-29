@@ -1,14 +1,15 @@
 "use client";
-import PrimaryCard from "@/src/components/PrimaryCard/PrimaryCard";
-import { Add, East } from "@mui/icons-material";
-import { Button, Stack } from "@mui/material";
-import { useState, useEffect } from "react";
+import GoalCard from "@/src/components/GoalCard/GoalCard";
+import { Add } from "@mui/icons-material";
+import { Button, Stack, Typography, Chip } from "@mui/material";
+import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Header from "@/src/components/Header/Header";
 import GoalDialogBox from "./goals/[id]/components/GoalDialogBox/GoalDialogBox";
 import { apiFetch } from "@/src/lib/apiFetch";
 import PrimaryCardSkeleton from "@/src/components/PrimaryCardSkeleton/PrimaryCardSkeleton";
 import NoDataFound from "@/src/components/NoDataFound/NoDataFound";
+import GoalsHeader from "@/src/components/GoalsHeader/GoalsHeader";
 import gate_cse from "@/public/Icons/gate_cse.svg";
 import placements from "@/public/Icons/placements.svg";
 import banking from "@/public/Icons/banking.svg";
@@ -37,6 +38,14 @@ export default function Home() {
       });
   }, []);
 
+  // Calculate statistics
+  const statistics = useMemo(() => {
+    const total = goalList.length;
+    const live = goalList.filter((g) => g.isLive).length;
+    const draft = total - live;
+    return { total, live, draft };
+  }, [goalList]);
+
   const dialogOpen = () => {
     setIsDialogOpen(true);
   };
@@ -46,56 +55,61 @@ export default function Home() {
   };
 
   return (
-    <Stack padding="20px" gap="10px">
-      <Header
-        title="Goals"
-        button={[
+    <Stack padding="20px" gap="24px">
+      <GoalsHeader
+        totalCount={goalList.length}
+        stats={statistics}
+        actions={
           <Button
-            key="goal"
             variant="contained"
             onClick={dialogOpen}
             startIcon={<Add />}
             sx={{
-              backgroundColor: "var(--primary-color)",
+              background: "linear-gradient(135deg, #FF9800 0%, #F57C00 100%)",
+              color: "white",
               textTransform: "none",
+              borderRadius: "10px",
+              padding: "10px 24px",
+              fontWeight: 700,
+              fontSize: "14px",
+              minWidth: "140px",
+              height: "48px",
+              boxShadow: "0 4px 12px rgba(255, 152, 0, 0.25)",
+              "&:hover": {
+                background: "linear-gradient(135deg, #F57C00 0%, #E65100 100%)",
+                boxShadow: "0 6px 16px rgba(255, 152, 0, 0.35)",
+                transform: "translateY(-1px)",
+              },
             }}
             disableElevation
           >
-            Goal
-          </Button>,
-        ]}
+            Create Goal
+          </Button>
+        }
       />
-      <Stack flexDirection="row" justifyContent="space-between">
-        <GoalDialogBox
-          isOpen={isDialogOpen}
-          onClose={dialogClose}
-          actionButton={
-            <Button
-              variant="text"
-              endIcon={<East />}
-              sx={{ textTransform: "none", color: "var(--primary-color)" }}
-            >
-              Create
-            </Button>
-          }
-        />
-      </Stack>
+
+      <GoalDialogBox
+        isOpen={isDialogOpen}
+        onClose={dialogClose}
+        setGoalList={setGoalList}
+      />
+
       <Stack
         flexDirection="row"
-        gap="20px"
+        gap="24px"
         flexWrap="wrap"
+        alignItems="flex-start"
         sx={{
           border: "1px solid var(--border-color)",
           backgroundColor: "var(--white)",
-          borderRadius: "10px",
-          padding: "20px",
-          minHeight: "80vh",
+          borderRadius: "12px",
+          padding: "24px",
         }}
       >
         {!isLoading ? (
           goalList.length > 0 ? (
             goalList.map((item, index) => (
-              <PrimaryCard
+              <GoalCard
                 key={index}
                 icon={
                   item.icon === "castle"
@@ -107,21 +121,28 @@ export default function Home() {
                     : ""
                 }
                 title={item.title}
-                actionButton="View"
+                actionButton="View Details"
                 onClick={() => {
                   router.push(`dashboard/goals/${item.goalID}`);
                 }}
                 isLive={item.isLive === true ? "Live" : "Draft"}
+                coursesCount={item.coursesCount}
+                subjectsCount={item.subjectsCount}
+                blogsCount={item.blogsCount}
+                updatedAt={item.updatedAt}
               />
             ))
           ) : (
             <Stack
               width="100%"
-              minHeight={"60vh"}
+              minHeight="60vh"
               justifyContent="center"
-              alignItems={"center"}
+              alignItems="center"
             >
-              <NoDataFound info="No goal Created yet" />
+              <NoDataFound
+                info="No goals created yet"
+                subInfo="Click 'Create Goal' to get started"
+              />
             </Stack>
           )
         ) : (

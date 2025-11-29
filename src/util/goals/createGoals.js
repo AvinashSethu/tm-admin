@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import { dynamoDB } from "../awsAgent";
+import { PutCommand } from "@aws-sdk/lib-dynamodb";
 
 export default async function createGoals({ title, icon }) {
   const params = {
@@ -9,6 +10,9 @@ export default async function createGoals({ title, icon }) {
       sKey: "GOALS",
       title,
       icon,
+      tagline: "",
+      description: "",
+      bannerImage: "",
       isLive: false,
       subjectList: [],
       coursesList: [],
@@ -18,7 +22,7 @@ export default async function createGoals({ title, icon }) {
     },
   };
   try {
-    await dynamoDB.put(params).promise();
+    await dynamoDB.send(new PutCommand(params));
     return {
       success: true,
       message: "Goal created successfully",

@@ -1,6 +1,7 @@
-import {dynamoDB} from "../awsAgent";
+import { dynamoDB } from "../awsAgent";
+import { GetCommand } from "@aws-sdk/lib-dynamodb";
 
-export default async function getGoal({goalID}) {
+export default async function getGoal({ goalID }) {
   const params = {
     TableName: `${process.env.AWS_DB_NAME}master`,
     Key: {
@@ -10,9 +11,9 @@ export default async function getGoal({goalID}) {
     ReturnConsumedCapacity: "TOTAL",
   };
   try {
-    const response = await dynamoDB.get(params).promise();
+    const response = await dynamoDB.send(new GetCommand(params));
     console.log(response);
-    
+
     if (!response.Item) {
       return {
         success: false,
@@ -26,6 +27,9 @@ export default async function getGoal({goalID}) {
         goalID: response.Item.pKey.split("#")[1],
         title: response.Item.title,
         icon: response.Item.icon,
+        tagline: response.Item.tagline,
+        description: response.Item.description,
+        bannerImage: response.Item.bannerImage,
         subjectList: response.Item.subjectList,
         coursesList: response.Item.coursesList,
         blogList: response.Item.blogList,

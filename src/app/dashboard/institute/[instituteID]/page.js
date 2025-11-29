@@ -1,21 +1,13 @@
 "use client";
 import { useSnackbar } from "@/src/app/context/SnackbarContext";
-import DialogBox from "@/src/components/DialogBox/DialogBox";
+import BatchCard from "@/src/components/BatchCard/BatchCard";
 import Header from "@/src/components/Header/Header";
+import InstituteDetailHeader from "./Components/InstituteDetailHeader";
 import NoDataFound from "@/src/components/NoDataFound/NoDataFound";
-import SecondaryCard from "@/src/components/SecondaryCard/SecondaryCard";
 import SecondaryCardSkeleton from "@/src/components/SecondaryCardSkeleton/SecondaryCardSkeleton";
-import StyledTextField from "@/src/components/StyledTextField/StyledTextField";
+import CreateBatchDialog from "./Components/CreateBatchDialog";
 import { apiFetch } from "@/src/lib/apiFetch";
-import { Add, Close, East, GroupsSharp } from "@mui/icons-material";
-import {
-  Button,
-  DialogContent,
-  IconButton,
-  Skeleton,
-  Stack,
-  Typography,
-} from "@mui/material";
+import { Stack, Typography } from "@mui/material";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
@@ -25,7 +17,6 @@ export default function InstituteID() {
   const instituteID = params.instituteID;
   const { showSnackbar } = useSnackbar();
   const [isDialogOpen, setIsDialogOPen] = useState(false);
-  const [title, setTitle] = useState("");
   const [batch, setBatch] = useState({});
   const [batchList, setBatchList] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -54,7 +45,6 @@ export default function InstituteID() {
         showSnackbar(data.message, "success", "", "3000");
         fetchBatch();
         setIsDialogOPen(false);
-        setTitle("");
       } else {
         showSnackbar(data.message, "error", "", "3000");
       }
@@ -86,62 +76,13 @@ export default function InstituteID() {
 
   return (
     <Stack padding="20px" gap="20px">
-      <Header
-        title={
-          batch?.instituteMeta?.title || (
-            <Skeleton variant="text" width="100px" />
-          )
-        }
-        search
-        button={[
-          <Button
-            key="batch"
-            variant="contained"
-            startIcon={<Add />}
-            onClick={dialogOpen}
-            sx={{
-              backgroundColor: "var(--primary-color)",
-              textTransform: "none",
-              width: "120px",
-            }}
-            disableElevation
-          >
-            Batch
-          </Button>,
-        ]}
-        back
+      <InstituteDetailHeader
+        instituteName={batch?.instituteMeta?.title}
+        instituteEmail={batch?.instituteMeta?.email}
+        batchCount={batchList.length}
+        onCreateBatch={dialogOpen}
+        isLoading={isLoading}
       />
-      <DialogBox
-        isOpen={isDialogOpen}
-        onClose={dialogClose}
-        title="Add Batch"
-        actionButton={
-          <Button
-            variant="text"
-            endIcon={<East />}
-            onClick={() => createBatch({ title })}
-            sx={{ textTransform: "none", color: "var(--primary-color)" }}
-          >
-            Create
-          </Button>
-        }
-        icon={
-          <IconButton
-            onClick={dialogClose}
-            sx={{ borderRadius: "8px", padding: "4px" }}
-          >
-            <Close sx={{ color: "var(--text2)" }} />
-          </IconButton>
-        }
-      >
-        <DialogContent>
-          <StyledTextField
-            placeholder="Batch Name"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-        </DialogContent>
-      </DialogBox>
       <Stack
         sx={{
           border: "1px solid var(--border-color)",
@@ -168,27 +109,10 @@ export default function InstituteID() {
             {!isLoading ? (
               batchList.length > 0 ? (
                 batchList.map((item, index) => (
-                  <SecondaryCard
+                  <BatchCard
                     key={index}
-                    icon={
-                      <GroupsSharp
-                        fontSize="large"
-                        sx={{ color: "var(--sec-color)" }}
-                      />
-                    }
-                    title={
-                      <span
-                        style={{ cursor: "pointer" }}
-                        onClick={() => {
-                          router.push(
-                            `/dashboard/institute/${instituteID}/${item.id}`
-                          );
-                        }}
-                      >
-                        {item.title}
-                      </span>
-                    }
-                    cardWidth="500px"
+                    batch={item}
+                    instituteID={instituteID}
                   />
                 ))
               ) : (
@@ -204,6 +128,12 @@ export default function InstituteID() {
           </Stack>
         </Stack>
       </Stack>
+      <CreateBatchDialog
+        open={isDialogOpen}
+        onClose={dialogClose}
+        onSubmit={createBatch}
+        isLoading={isLoading}
+      />
     </Stack>
   );
 }

@@ -8,10 +8,23 @@ import {
   Stack,
   Tooltip,
   Typography,
+  Dialog,
+  DialogTitle,
+  DialogActions,
 } from "@mui/material";
-import { Add, Close, East, Info, Settings } from "@mui/icons-material";
-import PrimaryCard from "@/src/components/PrimaryCard/PrimaryCard";
-import calendar from "@/public/Icons/weekCalendar.svg";
+import {
+  Add,
+  Close,
+  East,
+  Info,
+  Settings,
+  Groups,
+  Quiz,
+  Schedule,
+  EmojiEvents,
+  ArrowBackIosRounded,
+} from "@mui/icons-material";
+import SecondaryCard from "@/src/components/SecondaryCard/SecondaryCard";
 import { useParams, useRouter } from "next/navigation";
 import DialogBox from "@/src/components/DialogBox/DialogBox";
 import { useCallback, useEffect, useState } from "react";
@@ -23,6 +36,9 @@ import NoDataFound from "@/src/components/NoDataFound/NoDataFound";
 import PrimaryCardSkeleton from "@/src/components/PrimaryCardSkeleton/PrimaryCardSkeleton";
 import StyledSwitch from "@/src/components/StyledSwitch/StyledSwitch";
 import { enqueueSnackbar } from "notistack";
+import CreateExamDialog from "@/src/components/CreateExamDialog/CreateExamDialog";
+import ScheduledExamCard from "@/src/components/ScheduledExamCard/ScheduledExamCard";
+import React from "react";
 
 export default function ExamGroupID() {
   const params = useParams();
@@ -35,6 +51,7 @@ export default function ExamGroupID() {
   const [isLoading, setIsLoading] = useState(true);
   const [exam, setExam] = useState({});
   const [examList, setExamList] = useState([]);
+  const [isCreating, setIsCreating] = useState(false);
 
   const dialogOpen = () => {
     setIsDialogOPen(true);
@@ -58,6 +75,7 @@ export default function ExamGroupID() {
       });
       return;
     }
+    setIsCreating(true);
     apiFetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/exam/create`, {
       method: "POST",
       headers: {
@@ -84,6 +102,7 @@ export default function ExamGroupID() {
           autoHideDuration: 3000,
         });
       }
+      setIsCreating(false);
     });
   };
 
@@ -166,77 +185,250 @@ export default function ExamGroupID() {
 
   return (
     <Stack padding="20px" gap="15px">
-      <Header
-        title={
-          isLoading ? (
-            <Skeleton variant="text" sx={{ width: "100px" }} />
-          ) : (
-            exam.title
-          )
-        }
-        back
-        button={[
-          <Stack
-            key="live"
-            flexDirection="row"
-            alignItems="center"
-            gap="20px"
-            sx={{ marginLeft: "auto" }}
-          >
-            <Typography sx={{ fontFamily: "Lato", fontSize: "14px" }}>
-              Live
-            </Typography>
-            <StyledSwitch
-              checked={exam.isLive || false}
-              onChange={(e) => {
-                apiFetch(
-                  `${process.env.NEXT_PUBLIC_BASE_URL}/api/exam/group/${examGroupID}/update-group-live`,
-                  {
-                    method: "POST",
-                    headers: {
-                      "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                      isLive: e.target.checked,
-                      goalID: goalID,
-                    }),
-                  }
-                ).then((data) => {
-                  if (data.success) {
-                    enqueueSnackbar(data.message, {
-                      variant: "success",
-                      autoHideDuration: 3000,
-                    });
-                    fetchExamData();
-                  } else {
-                    enqueueSnackbar(data.message, {
-                      variant: "error",
-                      autoHideDuration: 3000,
-                    });
-                  }
-                });
+      {/* Custom Professional Header */}
+      <Stack
+        sx={{
+          backgroundColor: "var(--white)",
+          border: "1px solid var(--border-color)",
+          borderRadius: "12px",
+          overflow: "hidden",
+        }}
+      >
+        {/* Top Bar: Breadcrumbs & Actions */}
+        <Stack
+          direction="row"
+          justifyContent="space-between"
+          alignItems="center"
+          padding="16px 24px"
+          sx={{
+            borderBottom: "1px solid var(--border-color)",
+            backgroundColor: "#F8F9FA",
+          }}
+        >
+          {/* Breadcrumbs */}
+          <Stack direction="row" alignItems="center" gap="12px">
+            <IconButton
+              onClick={() => router.back()}
+              size="small"
+              sx={{
+                "&:hover": {
+                  backgroundColor: "rgba(var(--primary-rgb), 0.1)",
+                },
               }}
-            />
-            <Settings
-              sx={{ color: "var(--primary-color)", cursor: "pointer" }}
+            >
+              <ArrowBackIosRounded
+                sx={{
+                  fontSize: "18px",
+                  color: "var(--text3)",
+                }}
+              />
+            </IconButton>
+            <Stack direction="row" alignItems="center" gap="8px">
+              <Typography
+                sx={{
+                  fontSize: "13px",
+                  color: "var(--text3)",
+                  cursor: "pointer",
+                  "&:hover": { color: "var(--primary-color)" },
+                }}
+                onClick={() => router.push(`/dashboard/goals/${goalID}`)}
+              >
+                Goal
+              </Typography>
+              <Typography sx={{ fontSize: "13px", color: "var(--text3)" }}>
+                ›
+              </Typography>
+              <Typography
+                sx={{
+                  fontSize: "13px",
+                  color: "var(--text3)",
+                  cursor: "pointer",
+                  "&:hover": { color: "var(--primary-color)" },
+                }}
+                onClick={() =>
+                  router.push(`/dashboard/goals/${goalID}/examgroups`)
+                }
+              >
+                Exam Groups
+              </Typography>
+              <Typography sx={{ fontSize: "13px", color: "var(--text3)" }}>
+                ›
+              </Typography>
+              <Typography
+                sx={{
+                  fontSize: "13px",
+                  color: "var(--text2)",
+                  fontWeight: 600,
+                }}
+              >
+                {isLoading ? (
+                  <Skeleton variant="text" width="100px" height="20px" />
+                ) : (
+                  exam.title
+                )}
+              </Typography>
+            </Stack>
+          </Stack>
+
+          {/* Action Buttons */}
+          <Stack direction="row" gap="12px">
+            <Button
+              variant="outlined"
+              startIcon={<Settings />}
               onClick={settingDialogopen}
-            />
+              sx={{
+                textTransform: "none",
+                borderColor: "var(--border-color)",
+                color: "var(--text2)",
+                borderRadius: "8px",
+                padding: "8px 16px",
+                fontWeight: 600,
+                fontSize: "13px",
+                "&:hover": {
+                  borderColor: "var(--primary-color)",
+                  backgroundColor: "rgba(var(--primary-rgb), 0.05)",
+                },
+              }}
+            >
+              Settings
+            </Button>
             <Button
               variant="contained"
               startIcon={<Add />}
               onClick={dialogOpen}
               sx={{
-                backgroundColor: "var(--primary-color)",
+                backgroundColor: "#4CAF50",
+                color: "#FFFFFF",
                 textTransform: "none",
-                minWidth: "120px",
+                borderRadius: "8px",
+                padding: "8px 20px",
+                fontWeight: 600,
+                fontSize: "13px",
+                boxShadow: "none",
+                "&:hover": {
+                  backgroundColor: "#43A047",
+                  boxShadow: "0 2px 8px rgba(76, 175, 80, 0.3)",
+                },
               }}
               disableElevation
             >
-              Add
+              Add Exam
             </Button>
-          </Stack>,
-        ]}
-      />
+          </Stack>
+        </Stack>
+
+        {/* Main Section: Title, Stats & Status */}
+        <Stack padding="24px" gap="20px">
+          {/* Title and Live Badge */}
+          <Stack direction="row" alignItems="center" gap="16px">
+            <Stack
+              sx={{
+                width: "56px",
+                height: "56px",
+                backgroundColor: "rgba(var(--primary-rgb), 0.1)",
+                borderRadius: "14px",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                border: "1px solid rgba(var(--primary-rgb), 0.2)",
+                flexShrink: 0,
+              }}
+            >
+              <Groups
+                sx={{ fontSize: "28px", color: "var(--primary-color)" }}
+              />
+            </Stack>
+
+            <Stack flex={1} gap="6px">
+              <Stack direction="row" alignItems="center" gap="12px">
+                {isLoading ? (
+                  <Skeleton variant="text" width="250px" height="32px" />
+                ) : (
+                  <>
+                    <Typography
+                      sx={{
+                        fontFamily: "Lato",
+                        fontSize: "22px",
+                        fontWeight: 700,
+                        color: "var(--text1)",
+                      }}
+                    >
+                      {exam.title}
+                    </Typography>
+                    <Stack
+                      direction="row"
+                      alignItems="center"
+                      gap="6px"
+                      padding="6px 12px"
+                      sx={{
+                        backgroundColor: exam.isLive
+                          ? "rgba(76, 175, 80, 0.1)"
+                          : "rgba(158, 158, 158, 0.1)",
+                        borderRadius: "20px",
+                        border: `1px solid ${
+                          exam.isLive ? "#4CAF50" : "#9E9E9E"
+                        }`,
+                      }}
+                    >
+                      <Stack
+                        sx={{
+                          width: "8px",
+                          height: "8px",
+                          borderRadius: "50%",
+                          backgroundColor: exam.isLive ? "#4CAF50" : "#9E9E9E",
+                        }}
+                      />
+                      <Typography
+                        sx={{
+                          fontSize: "11px",
+                          fontWeight: 700,
+                          color: exam.isLive ? "#2E7D32" : "#757575",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.5px",
+                        }}
+                      >
+                        {exam.isLive ? "Live" : "Offline"}
+                      </Typography>
+                    </Stack>
+                  </>
+                )}
+              </Stack>
+              <Typography sx={{ fontSize: "13px", color: "var(--text3)" }}>
+                {isLoading ? (
+                  <Skeleton variant="text" width="300px" />
+                ) : (
+                  "Manage scheduled exams and track student performance"
+                )}
+              </Typography>
+            </Stack>
+          </Stack>
+
+          {/* Stats Cards */}
+          <Stack direction="row" gap="16px" flexWrap="wrap">
+            <StatCard
+              icon={<Quiz />}
+              label="Total Exams"
+              value={examList.length}
+              color="#2196F3"
+              isLoading={isLoading}
+            />
+            <StatCard
+              icon={<Schedule />}
+              label="Scheduled"
+              value={examList.filter((e) => e.scheduled).length}
+              color="#FF9800"
+              isLoading={isLoading}
+            />
+            <StatCard
+              icon={<EmojiEvents />}
+              label="Completed"
+              value={examList.filter((e) => e.completed).length}
+              color="#4CAF50"
+              isLoading={isLoading}
+            />
+          </Stack>
+        </Stack>
+      </Stack>
       <Stack
         sx={{
           backgroundColor: "var(--white)",
@@ -254,51 +446,174 @@ export default function ExamGroupID() {
           updateExamGroup={updateExamGroup}
           exam={exam}
         />
-        <DialogBox
+        <CreateExamDialog
           isOpen={isDialogOpen}
-          title="Add Test"
-          icon={
-            <IconButton sx={{ borderRadius: "8px", padding: "4px" }}>
-              <Close onClick={dialogClose} />
-            </IconButton>
-          }
-          actionButton={
-            <Button
-              variant="text"
-              endIcon={<East />}
-              onClick={() => createExam({ title })}
-              sx={{ textTransform: "none", color: "var(--primary-color)" }}
-            >
-              Add
-            </Button>
-          }
+          onClose={dialogClose}
+          onCreate={() => createExam({ title })}
+          isLoading={isCreating}
+          title="Add Exam to Group"
+          subtitle="Add a new exam to this exam group."
+          icon={<Add />}
+          infoText="This exam will be part of the group and share its settings."
         >
-          <DialogContent>
-            <Stack>
-              <StyledTextField
-                placeholder="Enter Test title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-              />
-            </Stack>
-          </DialogContent>
-        </DialogBox>
-        <Stack flexDirection="row" gap="30px">
-          <StatusCard
-            info
-            title="Mcoins rewarded"
-            count={
-              exam?.mCoin?.rewardCoin ?? <Skeleton variant="text" width={25} />
-            }
+          <StyledTextField
+            placeholder="Enter Test title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
           />
-          <StatusCard
-            info
-            title="No of attempts"
-            count={
-              exam?.mCoin?.conditionalPercent ?? (
-                <Skeleton variant="text" width={25} />
-              )
+        </CreateExamDialog>
+
+        {/* Live Status Control */}
+        <Stack
+          sx={{
+            padding: "16px 20px",
+            borderRadius: "10px",
+            border: "1px solid",
+            borderColor: exam.isLive ? "#4caf50" : "var(--border-color)",
+            backgroundColor: exam.isLive ? "#e8f5e9" : "#f5f5f5",
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+            gap: "12px",
+            transition: "all 0.3s ease",
+          }}
+        >
+          <Stack flex={1}>
+            <Typography
+              sx={{
+                fontFamily: "Lato",
+                fontSize: "14px",
+                fontWeight: "600",
+                color: exam.isLive ? "#2e7d32" : "var(--text2)",
+              }}
+            >
+              {exam.isLive ? "✓ Group is Live" : "Group is Offline"}
+            </Typography>
+            <Typography
+              sx={{
+                fontFamily: "Lato",
+                fontSize: "12px",
+                color: exam.isLive ? "#66bb6a" : "var(--text3)",
+              }}
+            >
+              {exam.isLive
+                ? "Students can access all exams in this group"
+                : "Activate to make exams visible to students"}
+            </Typography>
+          </Stack>
+          <StyledSwitch
+            checked={exam.isLive || false}
+            onChange={(e) => {
+              apiFetch(
+                `${process.env.NEXT_PUBLIC_BASE_URL}/api/exam/group/${examGroupID}/update-group-live`,
+                {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                    isLive: e.target.checked,
+                    goalID: goalID,
+                  }),
+                }
+              ).then((data) => {
+                if (data.success) {
+                  enqueueSnackbar(data.message, {
+                    variant: "success",
+                    autoHideDuration: 3000,
+                  });
+                  fetchExamData();
+                } else {
+                  enqueueSnackbar(data.message, {
+                    variant: "error",
+                    autoHideDuration: 3000,
+                  });
+                }
+              });
+            }}
+          />
+        </Stack>
+
+        {/* Group Overview Banner */}
+        <Stack
+          sx={{
+            padding: "16px 20px",
+            borderRadius: "10px",
+            backgroundColor: "#f8f9fa",
+            border: "1px solid var(--border-color)",
+          }}
+        >
+          <Stack
+            flexDirection="row"
+            alignItems="center"
+            gap="12px"
+            marginBottom="8px"
+          >
+            <Groups sx={{ color: "var(--primary-color)" }} />
+            <Typography
+              sx={{
+                fontFamily: "Lato",
+                fontSize: "16px",
+                fontWeight: "700",
+                color: "var(--text1)",
+              }}
+            >
+              Group Overview
+            </Typography>
+          </Stack>
+          <Typography
+            sx={{
+              fontFamily: "Lato",
+              fontSize: "14px",
+              color: "var(--text2)",
+              lineHeight: 1.6,
+            }}
+          >
+            This group contains {examList?.length || 0} exam
+            {examList?.length !== 1 ? "s" : ""}. All exams in this group share
+            the same settings configured in Group Settings.
+          </Typography>
+        </Stack>
+
+        {/* Real Analytics Cards */}
+        <Stack flexDirection="row" gap="20px" flexWrap="wrap">
+          <SecondaryCard
+            icon={<Quiz sx={{ color: "var(--primary-color)" }} />}
+            title="Total Exams"
+            subTitle={isLoading ? "..." : examList?.length || 0}
+            cardWidth="200px"
+          />
+          <SecondaryCard
+            icon={<Schedule sx={{ color: "var(--primary-color)" }} />}
+            title="Live Exams"
+            subTitle={
+              isLoading ? "..." : examList?.filter((e) => e.isLive).length || 0
             }
+            cardWidth="200px"
+          />
+          <SecondaryCard
+            icon={<Quiz sx={{ color: "var(--primary-color)" }} />}
+            title="Total Questions"
+            subTitle={
+              isLoading
+                ? "..."
+                : examList?.reduce(
+                    (acc, e) => acc + (e.totalQuestions || 0),
+                    0
+                  ) || 0
+            }
+            cardWidth="200px"
+          />
+          <SecondaryCard
+            icon={<EmojiEvents sx={{ color: "var(--primary-color)" }} />}
+            title="Total Marks"
+            subTitle={
+              isLoading
+                ? "..."
+                : examList?.reduce((acc, e) => acc + (e.totalMarks || 0), 0) ||
+                  0
+            }
+            cardWidth="200px"
           />
         </Stack>
         <Stack
@@ -311,11 +626,9 @@ export default function ExamGroupID() {
           {!isLoading ? (
             examList?.length > 0 ? (
               examList.map((item, index) => (
-                <PrimaryCard
+                <ScheduledExamCard
                   key={index}
-                  icon={calendar}
-                  title={item.title}
-                  actionButton="View"
+                  exam={item}
                   onClick={() =>
                     router.push(
                       `/dashboard/goals/${goalID}/examgroups/${examGroupID}/${item.id}`
@@ -383,10 +696,6 @@ const SettingsDialog = ({
     }
   }, [exam]);
 
-  // const handleSave = () => {
-  //   updateExamGroup({ params: localExam });
-  //   settingDialogClose();
-  // };
   const handleSave = () => {
     const updatedExam = {
       title: localExam.title,
@@ -395,7 +704,7 @@ const SettingsDialog = ({
       isFullScreenMode: localExam.isFullScreenMode,
       isShowResult: localExam.isShowResult,
       isRandomQuestion: localExam.isRandomQuestion,
-      mCoinRewardIsEnabled: localExam.mCoin.isActive,
+      mCoinRewardIsEnabled: localExam.mCoin.isEnabled,
       mCoinRewardConditionPercent: localExam.mCoin.conditionalPercent,
       mCoinRewardRewardCoin: localExam.mCoin.rewardCoin,
     };
@@ -404,208 +713,417 @@ const SettingsDialog = ({
     settingDialogClose();
   };
 
+  const SettingRow = ({ label, description, checked, onChange }) => (
+    <Stack
+      flexDirection="row"
+      justifyContent="space-between"
+      alignItems="center"
+      sx={{
+        padding: "16px",
+        borderRadius: "8px",
+        backgroundColor: "#f8f9fa",
+        border: "1px solid var(--border-color)",
+        transition: "all 0.2s",
+        "&:hover": {
+          backgroundColor: "#e9ecef",
+        },
+      }}
+    >
+      <Stack flex={1}>
+        <Typography
+          sx={{
+            fontFamily: "Lato",
+            fontSize: "14px",
+            fontWeight: "600",
+            color: "var(--text1)",
+            marginBottom: "4px",
+          }}
+        >
+          {label}
+        </Typography>
+        {description && (
+          <Typography
+            sx={{
+              fontFamily: "Lato",
+              fontSize: "12px",
+              color: "var(--text3)",
+              lineHeight: 1.5,
+            }}
+          >
+            {description}
+          </Typography>
+        )}
+      </Stack>
+      <StyledSwitch checked={checked} onChange={onChange} />
+    </Stack>
+  );
+
+  const SectionHeader = ({ icon, title }) => (
+    <Stack
+      flexDirection="row"
+      alignItems="center"
+      gap="8px"
+      marginBottom="12px"
+      marginTop="8px"
+    >
+      {icon}
+      <Typography
+        sx={{
+          fontFamily: "Lato",
+          fontSize: "15px",
+          fontWeight: "700",
+          color: "var(--text1)",
+        }}
+      >
+        {title}
+      </Typography>
+    </Stack>
+  );
+
   return (
-    <DialogBox
-      isOpen={isSettingDialog}
-      title="Group Settings"
-      icon={
+    <Dialog
+      open={isSettingDialog}
+      onClose={settingDialogClose}
+      maxWidth="md"
+      fullWidth
+      sx={{
+        "& .MuiDialog-paper": {
+          borderRadius: "12px",
+          maxHeight: "90vh",
+        },
+      }}
+    >
+      <DialogTitle
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          padding: "20px 24px",
+          borderBottom: "1px solid var(--border-color)",
+          backgroundColor: "#fafafa",
+        }}
+      >
+        <Stack flexDirection="row" alignItems="center" gap="12px">
+          <Settings sx={{ color: "var(--primary-color)" }} />
+          <Typography
+            sx={{
+              fontFamily: "Lato",
+              fontSize: "18px",
+              fontWeight: "700",
+            }}
+          >
+            Group Settings
+          </Typography>
+        </Stack>
         <IconButton
-          sx={{ borderRadius: "8px", padding: "4px" }}
           onClick={settingDialogClose}
+          sx={{
+            "&:hover": {
+              backgroundColor: "var(--primary-color-light, #e3f2fd)",
+            },
+          }}
         >
           <Close />
         </IconButton>
-      }
-      actionButton={
-        <Button
-          variant="text"
-          endIcon={<East />}
-          sx={{ textTransform: "none", color: "var(--primary-color)" }}
-          onClick={handleSave}
-        >
-          Save
-        </Button>
-      }
-    >
-      <DialogContent>
-        <Stack gap="10px">
-          <Stack gap="5px">
+      </DialogTitle>
+
+      <DialogContent sx={{ padding: "24px" }}>
+        <Stack gap="24px">
+          {/* Group Name */}
+          <Stack gap="8px">
             <Typography
-              sx={{ fontFamily: "Lato", fontSize: "12px", fontWeight: "700" }}
+              sx={{
+                fontFamily: "Lato",
+                fontSize: "14px",
+                fontWeight: "600",
+                color: "var(--text1)",
+              }}
             >
-              Name
+              Group Name
             </Typography>
             <StyledTextField
-              placeholder="Enter test name"
+              placeholder="Enter group name"
               value={localExam.title}
               onChange={(e) =>
                 setLocalExam({ ...localExam, title: e.target.value })
               }
             />
           </Stack>
-          <Stack flexDirection="row" gap="20px">
-            <Stack gap="6px">
-              <Typography
-                sx={{ fontFamily: "Lato", fontSize: "12px", fontWeight: "700" }}
-              >
-                Who can access this test
-              </Typography>
-              <StyledSwitch
-                checked={localExam.isProTest || false}
-                onChange={(e) =>
-                  setLocalExam({ ...localExam, isProTest: e.target.checked })
-                }
-              />
-            </Stack>
-            <Stack gap="6px">
-              <Typography
-                sx={{ fontFamily: "Lato", fontSize: "12px", fontWeight: "700" }}
-              >
-                AntiCheat
-              </Typography>
-              <StyledSwitch
+
+          {/* Exam Access Section */}
+          <Stack>
+            <SectionHeader
+              icon={<Groups sx={{ color: "var(--primary-color)" }} />}
+              title="Exam Access"
+            />
+            <SettingRow
+              label="Pro Users Only"
+              description="Restrict access to users with premium subscription"
+              checked={localExam.isProTest || false}
+              onChange={(e) =>
+                setLocalExam({ ...localExam, isProTest: e.target.checked })
+              }
+            />
+          </Stack>
+
+          {/* Security Features Section */}
+          <Stack>
+            <SectionHeader
+              icon={<Info sx={{ color: "var(--primary-color)" }} />}
+              title="Security Features"
+            />
+            <Stack gap="12px">
+              <SettingRow
+                label="Anti-Cheat Detection"
+                description="Monitor suspicious activities during exam"
                 checked={localExam.isAntiCheat}
                 onChange={(e) =>
                   setLocalExam({ ...localExam, isAntiCheat: e.target.checked })
                 }
               />
-            </Stack>
-          </Stack>
-          <Stack flexDirection="row" gap="20px">
-            <Stack gap="6px">
-              <Typography
-                sx={{ fontFamily: "Lato", fontSize: "12px", fontWeight: "700" }}
-              >
-                Show result after completion
-              </Typography>
-              <StyledSwitch
-                checked={localExam.isShowResult}
-                onChange={(e) => {
-                  const value = e.target.checked;
-                  setLocalExam({
-                    ...localExam,
-                    isShowResult: value,
-                  });
-                }}
-              />
-            </Stack>
-            <Stack gap="6px">
-              <Typography
-                sx={{ fontFamily: "Lato", fontSize: "12px", fontWeight: "700" }}
-              >
-                Random Question
-              </Typography>
-              <StyledSwitch
-                checked={localExam.isRandomQuestion}
-                onChange={(e) => {
-                  const value = e.target.checked;
-                  setLocalExam({
-                    ...localExam,
-                    isRandomQuestion: value,
-                  });
-                }}
-              />
-            </Stack>
-            <Stack gap="6px">
-              <Typography
-                sx={{ fontFamily: "Lato", fontSize: "12px", fontWeight: "700" }}
-              >
-                Full Screen Mode
-              </Typography>
-              <StyledSwitch
+              <SettingRow
+                label="Full Screen Mode"
+                description="Force students to stay in fullscreen while taking exam"
                 checked={localExam.isFullScreenMode}
+                onChange={(e) =>
+                  setLocalExam({
+                    ...localExam,
+                    isFullScreenMode: e.target.checked,
+                  })
+                }
+              />
+            </Stack>
+          </Stack>
+
+          {/* Display Options Section */}
+          <Stack>
+            <SectionHeader
+              icon={<Quiz sx={{ color: "var(--primary-color)" }} />}
+              title="Display Options"
+            />
+            <Stack gap="12px">
+              <SettingRow
+                label="Show Results After Completion"
+                description="Students can see their score and answers immediately"
+                checked={localExam.isShowResult}
+                onChange={(e) =>
+                  setLocalExam({
+                    ...localExam,
+                    isShowResult: e.target.checked,
+                  })
+                }
+              />
+              <SettingRow
+                label="Randomize Questions"
+                description="Questions appear in random order for each student"
+                checked={localExam.isRandomQuestion}
+                onChange={(e) =>
+                  setLocalExam({
+                    ...localExam,
+                    isRandomQuestion: e.target.checked,
+                  })
+                }
+              />
+            </Stack>
+          </Stack>
+
+          {/* MCoin Rewards Section */}
+          <Stack>
+            <SectionHeader
+              icon={<EmojiEvents sx={{ color: "var(--primary-color)" }} />}
+              title="Rewards"
+            />
+            <Stack gap="16px">
+              <SettingRow
+                label="Enable MCoin Rewards"
+                description="Reward students with coins based on performance"
+                checked={localExam?.mCoin?.isEnabled}
                 onChange={(e) => {
                   const value = e.target.checked;
                   setLocalExam({
                     ...localExam,
-                    isFullScreenMode: value,
+                    mCoin: { ...localExam.mCoin, isEnabled: value },
                   });
                 }}
               />
-            </Stack>
-          </Stack>
-          <Stack flexDirection="row" justifyContent="space-between">
-            <Stack>
-              <Typography
-                sx={{ fontFamily: "Lato", fontSize: "12px", fontWeight: "700" }}
-              >
-                MCoin rewards
-              </Typography>
-              <Stack flexDirection="row" alignItems="center" gap="5px">
-                <StyledSwitch
-                  checked={localExam?.mCoin?.isEnabled}
-                  onChange={(e) => {
-                    const value = e.target.checked;
-                    setLocalExam({
-                      ...localExam,
-                      mCoin: { ...localExam.mCoin, isEnabled: value },
-                    });
+
+              {localExam?.mCoin?.isEnabled && (
+                <Stack
+                  gap="16px"
+                  sx={{
+                    padding: "16px",
+                    borderRadius: "8px",
+                    backgroundColor: "#f0f7ff",
+                    border: "1px solid var(--primary-color-light, #bbdefb)",
                   }}
-                />
-                <Tooltip
-                  componentsProps={{
-                    tooltip: {
-                      sx: {
-                        backgroundColor: "var(--primary-color-acc-2)",
-                        fontSize: "12px",
-                        padding: "8px",
-                        borderRadius: "8px",
-                        width: "150px",
-                        color: "var(--text1)",
-                      },
-                    },
-                  }}
-                  title="This will reward the user with MCoin based on the percentage of the test they complete"
                 >
-                  <Info sx={{ color: "var(--primary-color)" }} />
-                </Tooltip>
-              </Stack>
-            </Stack>
-            <Stack gap="10px">
-              <Typography
-                sx={{ fontFamily: "Lato", fontSize: "12px", fontWeight: "700" }}
-              >
-                Select rewarding percentage
-              </Typography>
-              <Slider
-                size="small"
-                valueLabelDisplay="auto"
-                sx={{ color: "var(--primary-color)" }}
-                disabled={!localExam?.mCoin?.isEnabled}
-                value={localExam?.mCoin?.conditionalPercent || 0}
-                onChange={(e) =>
-                  setLocalExam({
-                    ...localExam,
-                    mCoin: {
-                      ...localExam.mCoin,
-                      conditionalPercent: e.target.value,
-                    },
-                  })
-                }
-              />
-            </Stack>
-            <Stack gap="5px">
-              <Typography
-                sx={{ fontFamily: "Lato", fontSize: "12px", fontWeight: "700" }}
-              >
-                Coins to be rewarded
-              </Typography>
-              <StyledTextField
-                placeholder="Enter coins"
-                disabled={!localExam?.mCoin?.isEnabled}
-                value={localExam?.mCoin?.rewardCoin}
-                type="number"
-                onChange={(e) =>
-                  setLocalExam({
-                    ...localExam,
-                    mCoin: { ...localExam.mCoin, rewardCoin: e.target.value },
-                  })
-                }
-              />
+                  <Stack gap="8px">
+                    <Typography
+                      sx={{
+                        fontFamily: "Lato",
+                        fontSize: "13px",
+                        fontWeight: "600",
+                        color: "var(--text1)",
+                      }}
+                    >
+                      Minimum Score Required (%)
+                    </Typography>
+                    <Stack flexDirection="row" alignItems="center" gap="16px">
+                      <Slider
+                        size="small"
+                        valueLabelDisplay="auto"
+                        sx={{ color: "var(--primary-color)", flex: 1 }}
+                        value={localExam?.mCoin?.conditionalPercent || 0}
+                        onChange={(e) =>
+                          setLocalExam({
+                            ...localExam,
+                            mCoin: {
+                              ...localExam.mCoin,
+                              conditionalPercent: e.target.value,
+                            },
+                          })
+                        }
+                      />
+                      <Typography
+                        sx={{
+                          fontFamily: "Lato",
+                          fontSize: "14px",
+                          fontWeight: "700",
+                          color: "var(--primary-color)",
+                          minWidth: "45px",
+                        }}
+                      >
+                        {localExam?.mCoin?.conditionalPercent || 0}%
+                      </Typography>
+                    </Stack>
+                    <Typography
+                      sx={{
+                        fontFamily: "Lato",
+                        fontSize: "11px",
+                        color: "var(--text3)",
+                      }}
+                    >
+                      Students must score at least this percentage to earn
+                      rewards
+                    </Typography>
+                  </Stack>
+
+                  <Stack gap="8px">
+                    <Typography
+                      sx={{
+                        fontFamily: "Lato",
+                        fontSize: "13px",
+                        fontWeight: "600",
+                        color: "var(--text1)",
+                      }}
+                    >
+                      Coins to Award
+                    </Typography>
+                    <StyledTextField
+                      placeholder="Enter coins"
+                      value={localExam?.mCoin?.rewardCoin}
+                      type="number"
+                      onChange={(e) =>
+                        setLocalExam({
+                          ...localExam,
+                          mCoin: {
+                            ...localExam.mCoin,
+                            rewardCoin: e.target.value,
+                          },
+                        })
+                      }
+                    />
+                  </Stack>
+                </Stack>
+              )}
             </Stack>
           </Stack>
         </Stack>
       </DialogContent>
-    </DialogBox>
+
+      <DialogActions
+        sx={{
+          padding: "16px 24px",
+          borderTop: "1px solid var(--border-color)",
+          backgroundColor: "#fafafa",
+        }}
+      >
+        <Button onClick={settingDialogClose} variant="text">
+          Cancel
+        </Button>
+        <Button
+          onClick={handleSave}
+          variant="contained"
+          sx={{
+            backgroundColor: "var(--primary-color)",
+            textTransform: "none",
+          }}
+          disableElevation
+        >
+          Save Changes
+        </Button>
+      </DialogActions>
+    </Dialog>
   );
 };
+
+// Stat Card Component for Header Stats
+const StatCard = ({ icon, label, value, color, isLoading }) => (
+  <Stack
+    direction="row"
+    alignItems="center"
+    gap="12px"
+    padding="12px 16px"
+    sx={{
+      backgroundColor: "var(--bg-color)",
+      borderRadius: "10px",
+      border: "1px solid var(--border-color)",
+      minWidth: "160px",
+    }}
+  >
+    <Stack
+      sx={{
+        width: "36px",
+        height: "36px",
+        backgroundColor: "var(--white)",
+        borderRadius: "8px",
+        justifyContent: "center",
+        alignItems: "center",
+        border: `1px solid ${color}20`,
+      }}
+    >
+      {icon &&
+        React.cloneElement(icon, {
+          sx: { fontSize: "20px", color: color },
+        })}
+    </Stack>
+    <Stack gap="2px">
+      <Typography
+        sx={{
+          fontSize: "11px",
+          color: "var(--text3)",
+          fontWeight: 600,
+          textTransform: "uppercase",
+          letterSpacing: "0.5px",
+        }}
+      >
+        {label}
+      </Typography>
+      {isLoading ? (
+        <Skeleton variant="text" width="30px" height="24px" />
+      ) : (
+        <Typography
+          sx={{
+            fontSize: "20px",
+            fontWeight: 800,
+            color: "var(--text1)",
+            fontFamily: "Lato",
+            lineHeight: 1,
+          }}
+        >
+          {value}
+        </Typography>
+      )}
+    </Stack>
+  </Stack>
+);

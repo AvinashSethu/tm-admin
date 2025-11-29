@@ -1,15 +1,16 @@
 import { dynamoDB } from "../awsAgent";
+import { ScanCommand } from "@aws-sdk/lib-dynamodb";
 
 export default async function getAllSubjects() {
   const params = {
     TableName: `${process.env.AWS_DB_NAME}content`,
     FilterExpression: "sKey = :sKey",
     ExpressionAttributeValues: {
-      ":sKey": "SUBJECTS",
+      ":sKey": "METADATA",
     },
   };
   try {
-    const response = await dynamoDB.scan(params).promise();
+    const response = await dynamoDB.send(new ScanCommand(params));
     return {
       success: true,
       message: "Subjects fetched successfully",

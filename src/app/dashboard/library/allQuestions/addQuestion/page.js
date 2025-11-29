@@ -1,7 +1,9 @@
 "use client";
+import { Suspense } from "react";
 import { useEffect, useState, useCallback, useMemo } from "react";
+import { useSearchParams } from "next/navigation";
 import Header from "@/src/components/Header/Header";
-import { Stack } from "@mui/material";
+import { Stack, CircularProgress } from "@mui/material";
 import { apiFetch } from "@/src/lib/apiFetch";
 import QuestionStepper from "./Components/QuestionStepper";
 
@@ -78,14 +80,20 @@ function validateAdditionalStep(data) {
   return true;
 }
 
-export default function AddQuestion() {
+function AddQuestionContent() {
+  const searchParams = useSearchParams();
+  const prefillSubjectID = searchParams.get("subjectID");
+
   const steps = useMemo(
     () => ["Basic Info", "Details", "Solution", "Preview"],
     []
   );
 
   const [activeStep, setActiveStep] = useState(0);
-  const [data, setData] = useState(defaultQuestionData);
+  const [data, setData] = useState({
+    ...defaultQuestionData,
+    subjectID: prefillSubjectID || "",
+  });
   const [isNextDisabled, setIsNextDisabled] = useState(true);
   const [allSubjects, setAllSubjects] = useState([]);
 
@@ -112,6 +120,13 @@ export default function AddQuestion() {
       .then((res) => setAllSubjects(res.success ? res.data.subjects : []))
       .catch(() => setAllSubjects([]));
   }, []);
+
+  // Update data if prefillSubjectID changes (though usually it's static on mount)
+  useEffect(() => {
+    if (prefillSubjectID) {
+      setData((prev) => ({ ...prev, subjectID: prefillSubjectID }));
+    }
+  }, [prefillSubjectID]);
 
   const handleNext = () => {
     if (activeStep < steps.length - 1) {
@@ -149,5 +164,13 @@ export default function AddQuestion() {
         setInitState={setInitState}
       />
     </Stack>
+  );
+}
+
+export default function AddQuestion() {
+  return (
+    <Suspense fallback={<CircularProgress />}>
+      <AddQuestionContent />
+    </Suspense>
   );
 }

@@ -1,19 +1,11 @@
 "use client";
 import { useState, useEffect } from "react";
-import {
-  Button,
-  Stack,
-  DialogContent,
-  CircularProgress,
-  IconButton,
-} from "@mui/material";
-import { Add, AccountBalance, East, Close } from "@mui/icons-material";
-import Header from "@/src/components/Header/Header";
-import SecondaryCard from "@/src/components/SecondaryCard/SecondaryCard";
+import { Stack } from "@mui/material";
+import InstituteHeader from "./Components/InstituteHeader";
+import InstituteCard from "@/src/components/InstituteCard/InstituteCard";
 import SecondaryCardSkeleton from "@/src/components/SecondaryCardSkeleton/SecondaryCardSkeleton";
 import NoDataFound from "@/src/components/NoDataFound/NoDataFound";
-import DialogBox from "@/src/components/DialogBox/DialogBox";
-import StyledTextField from "@/src/components/StyledTextField/StyledTextField";
+import CreateInstituteDialog from "./Components/CreateInstituteDialog";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/src/lib/apiFetch";
 import { useSnackbar } from "../../context/SnackbarContext";
@@ -24,10 +16,8 @@ export default function Institute() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [instituteList, setInstituteList] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [title, setTitle] = useState("");
-  const [email, setEmail] = useState("");
 
-  const createInstitute = () => {
+  const createInstitute = ({ title, email }) => {
     apiFetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/institute/create`, {
       method: "POST",
       headers: {
@@ -39,8 +29,6 @@ export default function Institute() {
         showSnackbar(data.message, "success", "", "3000");
         fetchInstitute();
         setIsDialogOpen(false);
-        setTitle("");
-        setEmail("");
       } else {
         showSnackbar(data.message, "error", "", "3000");
       }
@@ -65,25 +53,18 @@ export default function Institute() {
     fetchInstitute();
   }, []);
 
+  const activeBatches = instituteList.reduce(
+    (acc, curr) => acc + (curr.batchCount || 0),
+    0
+  );
+
   return (
     <Stack padding="20px" gap="20px">
-      <Header
-        title="Institute"
-        button={[
-          <Button
-            key="addInstitute"
-            variant="contained"
-            startIcon={<Add />}
-            onClick={() => setIsDialogOpen(true)}
-            sx={{
-              backgroundColor: "var(--primary-color)",
-              textTransform: "none",
-            }}
-            disableElevation
-          >
-            Institute
-          </Button>,
-        ]}
+      <InstituteHeader
+        instituteCount={instituteList.length}
+        activeBatches={activeBatches}
+        onCreateClick={() => setIsDialogOpen(true)}
+        isLoading={isLoading}
       />
       <Stack
         sx={{
@@ -98,21 +79,7 @@ export default function Institute() {
           {!isLoading ? (
             instituteList.length > 0 ? (
               instituteList.map((item, index) => (
-                <SecondaryCard
-                  key={index}
-                  title={
-                    <span
-                      onClick={() => {
-                        router.push(`/dashboard/institute/${item.id}`);
-                      }}
-                      style={{ cursor: "pointer" }}
-                    >
-                      {item.title}
-                    </span>
-                  }
-                  icon={<AccountBalance sx={{ color: "var(--sec-color)" }} />}
-                  cardWidth="350px"
-                />
+                <InstituteCard key={index} institute={item} />
               ))
             ) : (
               <Stack width="100%" height="70vh">
@@ -126,78 +93,12 @@ export default function Institute() {
           )}
         </Stack>
       </Stack>
-      <InstitutDialog
-        isDialogOpen={isDialogOpen}
-        setIsDialogOpen={setIsDialogOpen}
-        createInstitute={createInstitute}
-        title={title}
-        setTitle={setTitle}
-        email={email}
-        setEmail={setEmail}
+      <CreateInstituteDialog
+        open={isDialogOpen}
+        onClose={() => setIsDialogOpen(false)}
+        onSubmit={createInstitute}
         isLoading={isLoading}
       />
     </Stack>
   );
 }
-
-const InstitutDialog = ({
-  isDialogOpen,
-  setIsDialogOpen,
-  createInstitute,
-  title,
-  setTitle,
-  email,
-  setEmail,
-  isLoading,
-}) => {
-  return (
-    <DialogBox
-      isOpen={isDialogOpen}
-      title="Institute"
-      icon={
-        <IconButton
-          onClick={() => setIsDialogOpen(false)}
-          sx={{ borderRadius: "8px", padding: "4px" }}
-        >
-          <Close sx={{ color: "var(--text2)" }} />
-        </IconButton>
-      }
-      actionButton={
-        <Button
-          variant="text"
-          endIcon={<East />}
-          onClick={createInstitute}
-          sx={{ textTransform: "none", color: "var(--primary-color)" }}
-        >
-          {isLoading ? (
-            <CircularProgress
-              size={20}
-              sx={{ color: "var(--primary-color)" }}
-            />
-          ) : (
-            "Create"
-          )}
-        </Button>
-      }
-    >
-      <DialogContent>
-        <Stack gap="15px">
-          <StyledTextField
-            placeholder="Institute name"
-            value={title}
-            onChange={(e) => {
-              setTitle(e.target.value);
-            }}
-          />
-          <StyledTextField
-            placeholder="Enter email"
-            value={email}
-            onChange={(e) => {
-              setEmail(e.target.value);
-            }}
-          />
-        </Stack>
-      </DialogContent>
-    </DialogBox>
-  );
-};
