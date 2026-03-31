@@ -1,6 +1,7 @@
 import { getALLCourse } from "@/src/util/courses/getAllCourses";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function GET(request) {
+export const GET = withAuth(async (request, _context, auth) => {
   try {
     const resp = await getALLCourse();
     return Response.json(resp);
@@ -13,4 +14,4 @@ export async function GET(request) {
       { status: 500 }
     );
   }
-}
+});

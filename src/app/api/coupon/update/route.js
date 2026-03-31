@@ -1,6 +1,7 @@
 import { updateCoupon } from "@/src/util/coupon/couponController";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function POST(request) {
+export const POST = withAuth(async (request, _context, auth) => {
   const {
     id,
     title,
@@ -59,4 +60,4 @@ export async function POST(request) {
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
-}
+});

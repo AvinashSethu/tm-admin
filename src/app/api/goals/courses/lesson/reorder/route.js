@@ -1,6 +1,7 @@
 import { reorderLesson } from "@/src/util/courses/reorderLesson";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function POST(request) {
+export const POST = withAuth(async (request, _context, auth) => {
   const { courseID, goalID, lessonIDs, sections } = await request.json();
   if (!courseID || !lessonIDs) {
     return Response.json(
@@ -18,4 +19,4 @@ export async function POST(request) {
       { status: 500 }
     );
   }
-}
+});

@@ -1,6 +1,7 @@
 import deleteQuestion from "@/src/util/questions/deleteQuestion";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function POST(request) {
+export const POST = withAuth(async (request, _context, auth) => {
   const { questionID, subjectID } = await request.json();
   if (!questionID || !subjectID) {
     return Response.json(
@@ -15,4 +16,4 @@ export async function POST(request) {
     console.error("Error deleting question:", error);
     return Response.json({ error: "Error deleting question" }, { status: 500 });
   }
-}
+});

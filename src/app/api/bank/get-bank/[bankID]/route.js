@@ -1,6 +1,7 @@
 import getAllResources from "@/src/util/bank/getAllResources";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function GET(request, { params }) {
+export const GET = withAuth(async (request, { params }, auth) => {
   const { bankID } = await params;
   if (!bankID) {
     return Response.json(
@@ -26,4 +27,4 @@ export async function GET(request, { params }) {
       { status: 500 }
     );
   }
-}
+});

@@ -1,6 +1,7 @@
 import { getAllScheduledExams } from "@/src/util/exam/scheduleExamController";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function GET(request) {
+export const GET = withAuth(async (request, _context, auth) => {
   try {
     const response = await getAllScheduledExams();
     return Response.json(response);
@@ -11,4 +12,4 @@ export async function GET(request) {
       error: error.message,
     });
   }
-}
+});

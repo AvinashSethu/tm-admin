@@ -1,6 +1,7 @@
 import { getQuestions } from "@/src/util/exam/questionFilterController";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function POST(req) {
+export const POST = withAuth(async (req, _context, auth) => {
   try {
     const body = await req.json();
     const result = await getQuestions(body);
@@ -12,4 +13,4 @@ export async function POST(req) {
       { status: 500 }
     );
   }
-}
+});

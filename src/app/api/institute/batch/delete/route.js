@@ -1,7 +1,8 @@
 import { deleteBatch } from "@/src/util/institute/batchControllers";
 import { NextResponse } from "next/server";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function POST(request) {
+export const POST = withAuth(async (request, _context, auth) => {
   try {
     const { batchID } = await request.json();
 
@@ -22,4 +23,4 @@ export async function POST(request) {
       { status: 500 }
     );
   }
-}
+});

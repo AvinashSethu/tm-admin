@@ -4,8 +4,9 @@ import {
   verifyBannerUpload,
   deleteBanner,
 } from "@/src/util/banners/bannersController";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function GET(req) {
+export const GET = withAuth(async (req, _context, auth) => {
   try {
     const { success, message, data } = await getAllBanners();
     return Response.json({ success, message, data }, { status: 200 });
@@ -15,9 +16,9 @@ export async function GET(req) {
       { status: 500 }
     );
   }
-}
+});
 
-export async function POST(req) {
+export const POST = withAuth(async (req, _context, auth) => {
   const { fileName, fileType, title } = await req.json();
   if (!fileName || !fileType || !title) {
     return Response.json(
@@ -38,9 +39,9 @@ export async function POST(req) {
       { status: 500 }
     );
   }
-}
+});
 
-export async function PUT(req) {
+export const PUT = withAuth(async (req, _context, auth) => {
   const { bannerID } = await req.json();
   if (!bannerID) {
     return Response.json(
@@ -57,9 +58,9 @@ export async function PUT(req) {
       { status: 500 }
     );
   }
-}
+});
 
-export async function DELETE(req) {
+export const DELETE = withAuth(async (req, _context, auth) => {
   const { bannerID, path } = await req.json();
   if (!bannerID || !path) {
     return Response.json(
@@ -76,4 +77,4 @@ export async function DELETE(req) {
       { status: 500 }
     );
   }
-}
+});

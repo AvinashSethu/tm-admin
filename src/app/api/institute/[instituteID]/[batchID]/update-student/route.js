@@ -1,7 +1,8 @@
 import { updateStudentInBatch } from "@/src/util/institute/batchControllers";
 import { NextResponse } from "next/server";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function POST(request, { params }) {
+export const POST = withAuth(async (request, { params }, auth) => {
   try {
     const { batchID } = await params;
     const { userID, tag, rollNo } = await request.json();
@@ -23,4 +24,4 @@ export async function POST(request, { params }) {
       { status: 500 }
     );
   }
-}
+});

@@ -1,7 +1,8 @@
 import createCourse from "@/src/util/courses/createCourse";
 import checkUUID from "@/src/lib/checkUUID";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function POST(request) {
+export const POST = withAuth(async (request, _context, auth) => {
   const { title, goalID, description, thumbnail, language } =
     await request.json();
   if (!title || !goalID) {
@@ -30,4 +31,4 @@ export async function POST(request) {
     console.error("Error creating course:", error);
     return Response.json({ success: false, message: error.message || "Error creating course" }, { status: 500 });
   }
-}
+});

@@ -1,6 +1,7 @@
 import { createInstitute } from "@/src/util/institute/instituteControllers";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function POST(req) {
+export const POST = withAuth(async (req, _context, auth) => {
   const { title, email } = await req.json();
 
   if (!title || !email) {
@@ -26,7 +27,7 @@ export async function POST(req) {
       { status: 500 }
     );
   }
-}
+});
 
 function isValidEmail(email) {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

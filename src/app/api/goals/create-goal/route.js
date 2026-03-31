@@ -1,6 +1,7 @@
 import createGoals from "@/src/util/goals/createGoals";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function POST(request) {
+export const POST = withAuth(async (request, _context, auth) => {
   try {
     const { title, icon } = await request.json();
     if (!title || !icon) {
@@ -17,4 +18,4 @@ export async function POST(request) {
       { status: 500 }
     );
   }
-}
+});

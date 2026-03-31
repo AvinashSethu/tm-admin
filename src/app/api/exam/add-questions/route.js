@@ -1,6 +1,7 @@
 import { addQuestionToExamSection } from "@/src/util/exam/examController";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function POST(req) {
+export const POST = withAuth(async (req, _context, auth) => {
   const { examID, type, questions, sectionIndex } = await req.json();
   if (!examID || !type || !questions || sectionIndex === undefined) {
     return Response.json({
@@ -24,4 +25,4 @@ export async function POST(req) {
       message: error.message,
     }, { status: 500 });
   }
-}
+});

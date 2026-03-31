@@ -1,6 +1,7 @@
 import { getExamByID } from "@/src/util/exam/examController";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function GET(req, { params }) {
+export const GET = withAuth(async (req, { params }, auth) => {
   const { examID } = await params;
   if (!examID) {
     return Response.json({ error: "examID is required" }, { status: 400 });
@@ -11,4 +12,4 @@ export async function GET(req, { params }) {
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
-}
+});

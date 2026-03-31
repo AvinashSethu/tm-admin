@@ -1,6 +1,7 @@
 import { makeExamAsUnLive } from "@/src/util/exam/examController";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function POST(req) {
+export const POST = withAuth(async (req, _context, auth) => {
   const { examID, type } = await req.json();
   if (!examID || !type) {
     return Response.json(
@@ -18,4 +19,4 @@ export async function POST(req) {
       { status: 500 }
     );
   }
-}
+});

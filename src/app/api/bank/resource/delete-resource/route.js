@@ -1,6 +1,7 @@
 import { deleteResource } from "@/src/util/bank/deleteResource";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function POST(request) {
+export const POST = withAuth(async (request, _context, auth) => {
   const { resourceID, bankID } = await request.json();
   if (!resourceID || !bankID) {
     return Response.json(
@@ -20,4 +21,4 @@ export async function POST(request) {
       { status: 500 }
     );
   }
-}
+});

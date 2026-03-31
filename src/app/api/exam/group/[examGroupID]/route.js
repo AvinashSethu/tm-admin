@@ -1,6 +1,7 @@
 import { getExamGroup } from "@/src/util/exam/groupExamController";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function GET(request, { params }) {
+export const GET = withAuth(async (request, { params }, auth) => {
   const { examGroupID } = await params;
   if (!examGroupID) {
     return Response.json({
@@ -20,4 +21,4 @@ export async function GET(request, { params }) {
       { status: 500 }
     );
   }
-}
+});

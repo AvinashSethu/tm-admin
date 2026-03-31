@@ -1,6 +1,7 @@
 import { getExamsByBatchID } from "@/src/util/exam/batchExamController";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function GET(request, { params }) {
+export const GET = withAuth(async (request, { params }, auth) => {
   try {
     const { batchID } = await params;
     const result = await getExamsByBatchID(batchID);
@@ -14,4 +15,4 @@ export async function GET(request, { params }) {
       { status: 500 }
     );
   }
-}
+});

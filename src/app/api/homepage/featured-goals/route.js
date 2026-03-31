@@ -2,8 +2,9 @@ import {
   getHomePageSettings,
   updateFeaturedGoals,
 } from "@/src/util/homepage/homePageController";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function GET(request) {
+export const GET = withAuth(async (request, _context, auth) => {
   try {
     const result = await getHomePageSettings();
     return Response.json(result, { status: 200 });
@@ -14,9 +15,9 @@ export async function GET(request) {
       { status: 500 }
     );
   }
-}
+});
 
-export async function POST(request) {
+export const POST = withAuth(async (request, _context, auth) => {
   try {
     const { featuredGoalIDs } = await request.json();
 
@@ -36,4 +37,4 @@ export async function POST(request) {
       { status: 500 }
     );
   }
-}
+});

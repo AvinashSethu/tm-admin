@@ -1,6 +1,7 @@
 import { getGoalContent } from "@/src/util/goals/goalContent";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function GET(request) {
+export const GET = withAuth(async (request, _context, auth) => {
   const { searchParams } = new URL(request.url);
   const goalID = searchParams.get("goalID");
   try {
@@ -9,4 +10,4 @@ export async function GET(request) {
   } catch (error) {
     return Response.json({ message: "Internal server error" }, { status: 500 });
   }
-}
+});

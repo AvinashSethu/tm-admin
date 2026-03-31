@@ -1,6 +1,7 @@
 import { deleteSection } from "@/src/util/exam/examController";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function POST(request) {
+export const POST = withAuth(async (request, _context, auth) => {
   const { examID, type, sectionIndex } = await request.json();
   if (!examID || !type || sectionIndex == undefined) {
     return Response.json({ success: false, message: "Missing fields" });
@@ -21,4 +22,4 @@ export async function POST(request) {
       { status: 500 }
     );
   }
-}
+});

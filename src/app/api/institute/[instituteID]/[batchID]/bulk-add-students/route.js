@@ -1,7 +1,8 @@
 import { enrollStudentInBatch } from "@/src/util/institute/batchControllers";
 import { getAllUsers } from "@/src/util/user/userController";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function POST(req, { params }) {
+export const POST = withAuth(async (req, { params }, auth) => {
   const { batchID } = await params;
   const students = await req.json();
 
@@ -66,4 +67,4 @@ export async function POST(req, { params }) {
       errors: errors,
     },
   });
-}
+});

@@ -1,6 +1,7 @@
 import { createFile } from "@/src/util/bank/uploadFile";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function POST(request) {
+export const POST = withAuth(async (request, _context, auth) => {
   const { title, fileName, bankID, fileType } = await request.json();
 
   if (!title || !fileName || !bankID || !fileType) {
@@ -13,4 +14,4 @@ export async function POST(request) {
     console.error("Failed to create file:", error);
     return Response.json({ error: "Failed to create file" }, { status: 500 });
   }
-}
+});

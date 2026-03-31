@@ -1,6 +1,7 @@
 import { getQuestions } from "@/src/util/exam/questionFilterController";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function POST(request) {
+export const POST = withAuth(async (request, _context, auth) => {
   const {
     type,
     difficulty,
@@ -34,4 +35,4 @@ export async function POST(request) {
       { status: 500 }
     );
   }
-}
+});

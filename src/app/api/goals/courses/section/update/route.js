@@ -1,6 +1,7 @@
 import { updateSections } from "@/src/util/courses/updateSections";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function POST(request) {
+export const POST = withAuth(async (request, _context, auth) => {
   const { courseID, goalID, action, payload } = await request.json();
   if (!courseID || !goalID || !action) {
     return Response.json(
@@ -18,4 +19,4 @@ export async function POST(request) {
       { status: 500 }
     );
   }
-}
+});

@@ -1,6 +1,7 @@
 import { createAndUpdateExamSection } from "@/src/util/exam/examController";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function POST(req) {
+export const POST = withAuth(async (req, _context, auth) => {
   const { examID, type, sectionTitle, sectionIndex, pMark, nMark } =
     await req.json();
   if (!examID || !type) {
@@ -22,4 +23,4 @@ export async function POST(req) {
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
-}
+});

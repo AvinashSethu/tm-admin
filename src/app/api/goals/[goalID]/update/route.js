@@ -1,6 +1,7 @@
 import updateGoal from "@/src/util/goals/updateGoal";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function POST(request, { params }) {
+export const POST = withAuth(async (request, { params }, auth) => {
   const { goalID } = await params;
   try {
     const { title, icon, tagline, description } = await request.json();
@@ -23,4 +24,4 @@ export async function POST(request, { params }) {
       { status: 500 }
     );
   }
-}
+});

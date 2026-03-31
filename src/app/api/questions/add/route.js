@@ -1,7 +1,8 @@
 import checkQuestionFormat from "@/src/lib/checkQuestionFormat";
 import addQuestion from "@/src/util/questions/addQuestion";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function POST(request) {
+export const POST = withAuth(async (request, _context, auth) => {
   const questionData = await request.json();
 
   // Validate against our flat schema
@@ -16,4 +17,4 @@ export async function POST(request) {
     console.error("Error adding question:", err);
     return Response.json({ error: "Internal server error" }, { status: 500 });
   }
-}
+});

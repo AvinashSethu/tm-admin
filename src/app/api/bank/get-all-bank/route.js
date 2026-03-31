@@ -1,7 +1,8 @@
 // import { createHash } from "crypto";
 import getAllBank from "@/src/util/bank/getAllBank";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function GET(request) {
+export const GET = withAuth(async (request, _context, auth) => {
   try {
     const { searchParams } = new URL(request.url);
     const limit = searchParams.get("limit")
@@ -20,9 +21,9 @@ export async function GET(request) {
       { status: 500 }
     );
   }
-}
+});
 
-// export  async function GET() {
+// export const GET = withAuth(async (request, _context, auth) => {
 //   const expirationTime = Math.floor(Date.now() / 1000) + 60 * 60;
 //   // Concatenate the values
 //   const stringToHash =
@@ -34,4 +35,4 @@ export async function GET(request) {
 //   // Hash the concatenated string using SHA-256
 //   const hash = createHash("sha256").update(stringToHash).digest("hex");
 //   return Response.json({ hash, expirationTime });
-// }
+// }});

@@ -1,6 +1,7 @@
 import { getAllUsers } from "@/src/util/user/userController";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function GET(request) {
+export const GET = withAuth(async (request, _context, auth) => {
   const { searchParams } = new URL(request.url);
   const search = searchParams.get("search");
   const status = searchParams.get("status");
@@ -38,4 +39,4 @@ export async function GET(request) {
       { status: 500 }
     );
   }
-}
+});

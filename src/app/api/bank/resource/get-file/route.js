@@ -1,6 +1,7 @@
 import { getFileURL } from "@/src/util/bank/getFileURL";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function GET(request) {
+export const GET = withAuth(async (request, _context, auth) => {
   const url = new URL(request.url);
   const path = url.searchParams.get("path");
   if (!path) {
@@ -14,4 +15,4 @@ export async function GET(request) {
     console.error("Error getting file URL:", error);
     return Response.json({ error: "Error getting file URL" }, { status: 500 });
   }
-}
+});

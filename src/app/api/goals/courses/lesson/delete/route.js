@@ -1,6 +1,7 @@
 import deleteLesson from "@/src/util/courses/deleteLesson";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function POST(request) {
+export const POST = withAuth(async (request, _context, auth) => {
   const { lessonID, courseID, goalID } = await request.json();
   if (!lessonID || !courseID || !goalID) {
     return Response.json(
@@ -18,4 +19,4 @@ export async function POST(request) {
       { status: 500 }
     );
   }
-}
+});

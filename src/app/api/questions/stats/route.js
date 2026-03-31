@@ -1,8 +1,9 @@
 import { getQuestionStats } from "@/src/util/exam/questionFilterController";
+import { withAuth } from "@/src/lib/withAuth";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(request) {
+export const GET = withAuth(async (request, _context, auth) => {
   const url = new URL(request.url);
   const subjectID = url.searchParams.get("subjectID") || undefined;
   const type = url.searchParams.get("type") || undefined;
@@ -27,4 +28,4 @@ export async function GET(request) {
       { status: 500 }
     );
   }
-}
+});

@@ -1,6 +1,7 @@
 import { updateBatchListExamBasicInfo } from "@/src/util/exam/examController";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function POST(req) {
+export const POST = withAuth(async (req, _context, auth) => {
   const { batchList, examID } = await req.json();
   if (!batchList || !examID) {
     return Response.json({
@@ -29,4 +30,4 @@ export async function POST(req) {
       message: error.message,
     }, { status: 500 });
   }
-}
+});

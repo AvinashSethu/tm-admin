@@ -1,6 +1,7 @@
 import getCourse from "@/src/util/courses/getCourse";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function POST(request) {
+export const POST = withAuth(async (request, _context, auth) => {
   const { courseID, goalID } = await request.json();
   
   if (!courseID) {
@@ -12,4 +13,4 @@ export async function POST(request) {
   } catch (error) {
     return Response.json({ message: "Error fetching course" }, { status: 500 });
   }
-}
+});

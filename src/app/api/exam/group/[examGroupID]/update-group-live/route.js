@@ -1,6 +1,7 @@
 import { updateExamGroupLiveStatus } from "@/src/util/exam/groupExamController";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function POST(req, { params }) {
+export const POST = withAuth(async (req, { params }, auth) => {
   const { examGroupID } = await params;
   const { isLive, goalID } = await req.json();
   try {
@@ -16,4 +17,4 @@ export async function POST(req, { params }) {
       message: error.message,
     });
   }
-}
+});

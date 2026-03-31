@@ -1,6 +1,7 @@
 import uploadImage from "@/src/util/questions/uploadImage";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function POST(request) {
+export const POST = withAuth(async (request, _context, auth) => {
   const { filename, fileType } = await request.json();
   if (!filename || !fileType) {
     return Response.json(
@@ -15,4 +16,4 @@ export async function POST(request) {
     console.error("Error uploading image:", error);
     return Response.json({ error: "Error uploading image" }, { status: 500 });
   }
-}
+});

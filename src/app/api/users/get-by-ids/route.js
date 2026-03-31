@@ -1,6 +1,7 @@
 import { getUsersByIds } from "@/src/util/user/userController";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function POST(request) {
+export const POST = withAuth(async (request, _context, auth) => {
   try {
     const { ids } = await request.json();
     const response = await getUsersByIds(ids);
@@ -14,4 +15,4 @@ export async function POST(request) {
       { status: 500 }
     );
   }
-}
+});

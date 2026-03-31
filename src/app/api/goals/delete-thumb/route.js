@@ -1,6 +1,7 @@
 import { deleteGoalThumbnail } from "@/src/util/goals/goalThumbnail";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function POST(request) {
+export const POST = withAuth(async (request, _context, auth) => {
   const { goalID } = await request.json();
 
   try {
@@ -14,4 +15,4 @@ export async function POST(request) {
       { status: 500 }
     );
   }
-}
+});

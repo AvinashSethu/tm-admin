@@ -1,6 +1,7 @@
 import { getAllTransactions } from "@/src/util/transactions/transactionController";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function GET(request) {
+export const GET = withAuth(async (request, _context, auth) => {
   const { searchParams } = new URL(request.url);
   const startDate = searchParams.get("startDate");
   const endDate = searchParams.get("endDate");
@@ -11,4 +12,4 @@ export async function GET(request) {
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
-}
+});

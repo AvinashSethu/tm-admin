@@ -1,6 +1,7 @@
 import { getStudentsByBatchIds } from "@/src/util/institute/batchControllers";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function POST(request) {
+export const POST = withAuth(async (request, _context, auth) => {
   try {
     const { batchIds } = await request.json();
     const response = await getStudentsByBatchIds(batchIds);
@@ -14,4 +15,4 @@ export async function POST(request) {
       { status: 500 }
     );
   }
-}
+});

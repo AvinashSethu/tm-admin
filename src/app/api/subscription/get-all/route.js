@@ -1,6 +1,7 @@
 import { getAllSubscriptionPlan } from "@/src/util/subscription/subscriptionController";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function GET(req) {
+export const GET = withAuth(async (req, _context, auth) => {
   try {
     const response = await getAllSubscriptionPlan();
     return Response.json(response);
@@ -15,4 +16,4 @@ export async function GET(req) {
       }
     );
   }
-}
+});

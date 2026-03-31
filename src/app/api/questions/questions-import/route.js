@@ -1,7 +1,8 @@
 import checkQuestionFormat from "@/src/lib/checkQuestionFormat";
 import { batchAddQuestions } from "@/src/util/questions/questionsBulkImport";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function POST(request) {
+export const POST = withAuth(async (request, _context, auth) => {
   const questions = await request.json();
 
   if (!Array.isArray(questions) || questions.length === 0) {
@@ -39,4 +40,4 @@ export async function POST(request) {
       { status: 500 }
     );
   }
-}
+});

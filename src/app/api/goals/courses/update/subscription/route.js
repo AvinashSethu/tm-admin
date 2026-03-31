@@ -1,8 +1,9 @@
 import { updateCourseSubscription } from "@/src/util/courses/updateCourse";
 import checkUUID from "@/src/lib/checkUUID";
 import Joi from "joi";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function POST(request) {
+export const POST = withAuth(async (request, _context, auth) => {
   const { courseID, goalID, subscription } = await request.json();
 
   // Validate that required fields are provided.
@@ -63,4 +64,4 @@ export async function POST(request) {
       { status: 500 }
     );
   }
-}
+});

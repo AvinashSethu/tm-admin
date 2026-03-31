@@ -1,6 +1,7 @@
 import { deleteSubscriptionPlan } from "@/src/util/subscription/subscriptionController";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function POST(req) {
+export const POST = withAuth(async (req, _context, auth) => {
   const { id } = await req.json();
   if (!id) {
     return Response.json({
@@ -18,4 +19,4 @@ export async function POST(req) {
       message: error.message,
     }, { status: 500 });
   }
-}
+});

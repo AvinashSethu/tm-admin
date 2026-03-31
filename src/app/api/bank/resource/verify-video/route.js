@@ -1,6 +1,7 @@
 import { verifyUpload } from "@/src/util/bank/uploadVideo";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function POST(request) {
+export const POST = withAuth(async (request, _context, auth) => {
   const { videoID, bankID, resourceID } = await request.json();
   if (!videoID || !bankID || !resourceID) {
     return Response.json(
@@ -20,4 +21,4 @@ export async function POST(request) {
       { status: 500 }
     );
   }
-}
+});

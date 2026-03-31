@@ -1,8 +1,9 @@
 import { searchAllQuestions } from "@/src/util/exam/questionFilterController";
+import { withAuth } from "@/src/lib/withAuth";
 
 export const dynamic = "force-dynamic";
 
-export async function GET(request) {
+export const GET = withAuth(async (request, _context, auth) => {
   const { searchParams } = new URL(request.url);
   const q = searchParams.get("q");
 
@@ -23,4 +24,4 @@ export async function GET(request) {
       { status: 500 }
     );
   }
-}
+});

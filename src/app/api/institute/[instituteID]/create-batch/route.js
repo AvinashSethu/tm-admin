@@ -1,6 +1,7 @@
 import { createBatch } from "@/src/util/institute/batchControllers";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function POST(req, { params }) {
+export const POST = withAuth(async (req, { params }, auth) => {
   const { instituteID } = await params;
   const { title, tags } = await req.json();
 
@@ -20,4 +21,4 @@ export async function POST(req, { params }) {
       { status: 500 }
     );
   }
-}
+});

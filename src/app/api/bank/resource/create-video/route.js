@@ -1,6 +1,7 @@
 import { createVideo } from "@/src/util/bank/uploadVideo";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function POST(request) {
+export const POST = withAuth(async (request, _context, auth) => {
   const { title, bankID } = await request.json();
   if (!title || !bankID) {
     return Response.json(
@@ -17,4 +18,4 @@ export async function POST(request) {
       { status: 500 }
     );
   }
-}
+});

@@ -1,6 +1,7 @@
 import liveUnliveGoal from "@/src/util/goals/liveUnliveGoal";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function GET(request, { params }) {
+export const GET = withAuth(async (request, { params }, auth) => {
   const { goalID } = await params;
   try {
     const response = await liveUnliveGoal({ goalID });
@@ -11,4 +12,4 @@ export async function GET(request, { params }) {
       message: error.message,
     });
   }
-}
+});

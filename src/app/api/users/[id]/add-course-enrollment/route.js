@@ -1,6 +1,7 @@
 import { createCourseEnrollment } from "@/src/util/user/userController";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function POST(request, { params }) {
+export const POST = withAuth(async (request, { params }, auth) => {
   const { id } = await params;
   const { courseID, goalID, subscriptionPlanIndex } = await request.json();
   if (!courseID || !goalID) {
@@ -29,4 +30,4 @@ export async function POST(request, { params }) {
       { status: 500 }
     );
   }
-}
+});

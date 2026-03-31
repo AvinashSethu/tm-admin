@@ -1,6 +1,7 @@
 import { getCourseEnrollByUserID } from "@/src/util/user/userController";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function GET(request, { params }) {
+export const GET = withAuth(async (request, { params }, auth) => {
   const { id } = await params;
   try {
     const response = await getCourseEnrollByUserID(id);
@@ -11,4 +12,4 @@ export async function GET(request, { params }) {
       message: error.message,
     });
   }
-}
+});

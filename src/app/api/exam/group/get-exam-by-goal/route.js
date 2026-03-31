@@ -1,6 +1,7 @@
 import { getExamGroupByGoalID } from "@/src/util/exam/groupExamController";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function POST(request) {
+export const POST = withAuth(async (request, _context, auth) => {
   const { goalID } = await request.json();
   if (!goalID) {
     return Response.json({
@@ -20,4 +21,4 @@ export async function POST(request) {
       { status: 500 }
     );
   }
-}
+});

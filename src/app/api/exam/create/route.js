@@ -1,6 +1,7 @@
 import { createExam } from "@/src/util/exam/examController";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function POST(request) {
+export const POST = withAuth(async (request, _context, auth) => {
   const { type, title, groupID, goalID, batchList, studentList } =
     await request.json();
   try {
@@ -16,4 +17,4 @@ export async function POST(request) {
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
-}
+});

@@ -1,8 +1,9 @@
 import getGoal from "@/src/util/goals/getGoal";
 import getSubject from "@/src/util/subjects/getSubject";
 import addSubject from "@/src/util/goals/addSubject";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function POST(request) {
+export const POST = withAuth(async (request, _context, auth) => {
   const { goalID, subjectID } = await request.json();
   try {
     const goal = await getGoal({ goalID });
@@ -28,4 +29,4 @@ export async function POST(request) {
       { status: 500 }
     );
   }
-}
+});

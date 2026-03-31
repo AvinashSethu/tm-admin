@@ -1,6 +1,7 @@
 import { updateExamGroup } from "@/src/util/exam/groupExamController";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function POST(req) {
+export const POST = withAuth(async (req, _context, auth) => {
   const {
     examGroupID,
     goalID,
@@ -46,4 +47,4 @@ export async function POST(req) {
       { status: 500 }
     );
   }
-}
+});

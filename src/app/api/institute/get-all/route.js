@@ -1,6 +1,7 @@
 import { getAllInstitutes } from "@/src/util/institute/instituteControllers";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function GET(req) {
+export const GET = withAuth(async (req, _context, auth) => {
   try {
     const result = await getAllInstitutes();
     return Response.json(result);
@@ -10,4 +11,4 @@ export async function GET(req) {
       { status: 500 }
     );
   }
-}
+});

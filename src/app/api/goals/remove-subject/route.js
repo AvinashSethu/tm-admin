@@ -1,7 +1,8 @@
 import { dynamoDB } from "@/src/util/awsAgent";
 import { GetCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function POST(request) {
+export const POST = withAuth(async (request, _context, auth) => {
   const { goalID, subjectID } = await request.json();
 
   if (!goalID || !subjectID) {
@@ -62,4 +63,4 @@ export async function POST(request) {
       { status: 500 }
     );
   }
-}
+});

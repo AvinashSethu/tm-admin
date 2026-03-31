@@ -1,6 +1,7 @@
 import getAllSubjects from "@/src/util/subjects/getAllSubjects";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function GET(request) {
+export const GET = withAuth(async (request, _context, auth) => {
   try {
     const { searchParams } = new URL(request.url);
     const limit = searchParams.get("limit")
@@ -16,4 +17,4 @@ export async function GET(request) {
       { status: 500 }
     );
   }
-}
+});

@@ -1,8 +1,9 @@
 import { dynamoDB, s3 } from "@/src/util/awsAgent";
 import { QueryCommand, BatchGetCommand } from "@aws-sdk/lib-dynamodb";
 import { GetObjectCommand } from "@aws-sdk/client-s3";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function GET(req, { params }) {
+export const GET = withAuth(async (req, { params }, auth) => {
   const { id, attemptID } = await params;
 
   try {
@@ -115,7 +116,7 @@ export async function GET(req, { params }) {
     console.error("Error fetching attempt details:", error);
     return Response.json({ error: error.message }, { status: 500 });
   }
-}
+});
 
 // Helper to read S3 stream
 const streamToString = (stream) =>

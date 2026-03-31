@@ -1,6 +1,7 @@
 import { verifyTransaction } from "@/src/util/transactions/transactionController";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function POST(request) {
+export const POST = withAuth(async (request, _context, auth) => {
   try {
     const { transactionId } = await request.json();
 
@@ -20,4 +21,4 @@ export async function POST(request) {
       { status: 500 }
     );
   }
-}
+});

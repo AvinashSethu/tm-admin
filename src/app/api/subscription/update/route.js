@@ -1,6 +1,7 @@
 import { updateSubscriptionPlan } from "@/src/util/subscription/subscriptionController";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function POST(req) {
+export const POST = withAuth(async (req, _context, auth) => {
   const { id, priceWithTax, type, duration, discountInPercent } =
     await req.json();
   if (!id || !priceWithTax || !type || !duration) {
@@ -23,4 +24,4 @@ export async function POST(req) {
       message: error.message,
     });
   }
-}
+});

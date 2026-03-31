@@ -1,6 +1,7 @@
 import getLessons from "@/src/util/courses/getLessons";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function POST(request) {
+export const POST = withAuth(async (request, _context, auth) => {
   const { courseID } = await request.json();
   if (!courseID) {
     return Response.json({ message: "courseID is required" }, { status: 400 });
@@ -11,4 +12,4 @@ export async function POST(request) {
   } catch (error) {
     return Response.json({ message: "Internal server error" }, { status: 500 });
   }
-}
+});

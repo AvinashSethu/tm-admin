@@ -1,6 +1,7 @@
 import { updateExamBasicInfo } from "@/src/util/exam/examController";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function POST(req) {
+export const POST = withAuth(async (req, _context, auth) => {
   const {
     examID,
     type,
@@ -61,4 +62,4 @@ export async function POST(req) {
       { status: 500 }
     );
   }
-}
+});

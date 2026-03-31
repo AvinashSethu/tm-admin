@@ -1,6 +1,7 @@
 import getSubject from "@/src/util/subjects/getSubject";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function GET(req, { params }) {
+export const GET = withAuth(async (req, { params }, auth) => {
   const { subjectID } = await params;
 
   if (!subjectID) {
@@ -23,4 +24,4 @@ export async function GET(req, { params }) {
       { status: 500 }
     );
   }
-}
+});

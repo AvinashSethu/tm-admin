@@ -1,6 +1,7 @@
 import { getAllBatchesByInstituteID } from "@/src/util/institute/batchControllers";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function GET(req, { params }) {
+export const GET = withAuth(async (req, { params }, auth) => {
   const { instituteID } = await params;
   if (!instituteID) {
     return Response.json(
@@ -17,4 +18,4 @@ export async function GET(req, { params }) {
       { status: 500 }
     );
   }
-}
+});

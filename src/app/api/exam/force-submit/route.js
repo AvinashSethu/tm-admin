@@ -1,9 +1,10 @@
 import { dynamoDB } from "@/src/util/awsAgent";
 import { QueryCommand, UpdateCommand } from "@aws-sdk/lib-dynamodb";
+import { withAuth } from "@/src/lib/withAuth";
 
 const USER_TABLE = `${process.env.AWS_DB_NAME}users`;
 
-export async function POST(request) {
+export const POST = withAuth(async (request, _context, auth) => {
   try {
     const { attemptPKey } = await request.json();
 
@@ -108,4 +109,4 @@ export async function POST(request) {
       { status: 500 }
     );
   }
-}
+});

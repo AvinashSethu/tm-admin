@@ -1,6 +1,7 @@
 import renameBank from "@/src/util/bank/renameBank";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function POST(request, { params }) {
+export const POST = withAuth(async (request, { params }, auth) => {
   const { bankID } = await params;
   if (!bankID) {
     return Response.json(
@@ -26,4 +27,4 @@ export async function POST(request, { params }) {
       { status: 500 },
     );
   }
-}
+});

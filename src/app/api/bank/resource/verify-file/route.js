@@ -1,6 +1,7 @@
 import { verifyFile } from "@/src/util/bank/uploadFile";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function POST(request) {
+export const POST = withAuth(async (request, _context, auth) => {
 
   const { resourceID, path } = await request.json();
   
@@ -14,4 +15,4 @@ export async function POST(request) {
     console.error("Failed to verify file:", error);
     return Response.json({ error: "Failed to verify file" }, { status: 500 });
   }
-}
+});

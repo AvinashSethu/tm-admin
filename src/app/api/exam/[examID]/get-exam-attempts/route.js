@@ -1,6 +1,7 @@
 import { getAllExamAttemptsByExamID } from "@/src/util/exam/examAttemptController";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function GET(request, { params }) {
+export const GET = withAuth(async (request, { params }, auth) => {
   const { examID } = await params;
   try {
     const response = await getAllExamAttemptsByExamID(examID);
@@ -11,4 +12,4 @@ export async function GET(request, { params }) {
       message: error.message,
     });
   }
-}
+});

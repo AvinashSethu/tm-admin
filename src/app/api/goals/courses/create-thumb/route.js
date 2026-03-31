@@ -1,6 +1,7 @@
 import { createThumbnail } from "@/src/util/courses/courseThumbnail";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function POST(request) {
+export const POST = withAuth(async (request, _context, auth) => {
   const { courseID, fileType, fileName, goalID } = await request.json();
 
   try {
@@ -17,4 +18,4 @@ export async function POST(request) {
       { status: 500 }
     );
   }
-}
+});

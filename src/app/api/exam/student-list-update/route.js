@@ -1,6 +1,7 @@
 import { updateStudentListExamBasicInfo } from "@/src/util/exam/examController";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function POST(request) {
+export const POST = withAuth(async (request, _context, auth) => {
   try {
     const { examID, studentList } = await request.json();
     const response = await updateStudentListExamBasicInfo({
@@ -17,4 +18,4 @@ export async function POST(request) {
       { status: 500 }
     );
   }
-}
+});

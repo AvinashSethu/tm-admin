@@ -1,6 +1,7 @@
 import getVideoURL from "@/src/util/bank/getVideoURL";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function GET(request) {
+export const GET = withAuth(async (request, _context, auth) => {
   const url = new URL(request.url);
   const resourceID = url.searchParams.get("resourceID");
   if (!resourceID) {
@@ -18,4 +19,4 @@ export async function GET(request) {
       { status: 500 }
     );
   }
-}
+});

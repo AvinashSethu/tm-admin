@@ -1,6 +1,7 @@
 import { updateSubject } from "@/src/util/subjects/createSubject";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function POST(req) {
+export const POST = withAuth(async (req, _context, auth) => {
   const { subjectID, title } = await req.json();
   if (!subjectID || !title) {
     return Response.json({ error: "Missing required fields" }, { status: 400 });
@@ -11,4 +12,4 @@ export async function POST(req) {
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
-}
+});

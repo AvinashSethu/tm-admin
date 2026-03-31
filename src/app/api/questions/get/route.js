@@ -1,11 +1,12 @@
 import { getQuestions } from "@/src/util/exam/questionFilterController";
+import { withAuth } from "@/src/lib/withAuth";
 
 /**
  * GET /api/questions
  * Query parameters:
  *   subjectID (required), type, difficulty, search, isRandom, count, limit, lastKey
  */
-export async function GET(request) {
+export const GET = withAuth(async (request, _context, auth) => {
   const url = new URL(request.url);
   const subjectID = url.searchParams.get("subjectID");
   const type = url.searchParams.get("type") || undefined;
@@ -59,4 +60,4 @@ export async function GET(request) {
       { status: 500 }
     );
   }
-}
+});

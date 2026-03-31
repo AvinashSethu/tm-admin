@@ -3,8 +3,9 @@ import {
   updateUser,
   deleteUser,
 } from "@/src/util/user/userController";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function GET(request, { params }) {
+export const GET = withAuth(async (request, { params }, auth) => {
   const { id } = await params;
   try {
     const user = await getUserByID(id);
@@ -12,9 +13,9 @@ export async function GET(request, { params }) {
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
-}
+});
 
-export async function POST(request, { params }) {
+export const POST = withAuth(async (request, { params }, auth) => {
   const { id } = await params;
   const { name, phone, gender, address, school, grade, targetExam } =
     await request.json();
@@ -42,9 +43,9 @@ export async function POST(request, { params }) {
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
-}
+});
 
-export async function DELETE(request, { params }) {
+export const DELETE = withAuth(async (request, { params }, auth) => {
   const { id } = await params;
   try {
     const result = await deleteUser(id);
@@ -52,4 +53,4 @@ export async function DELETE(request, { params }) {
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
-}
+});

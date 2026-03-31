@@ -1,7 +1,8 @@
 import { updateBasicCourseInfo } from "@/src/util/courses/updateCourse";
 import checkUUID from "@/src/lib/checkUUID";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function POST(request) {
+export const POST = withAuth(async (request, _context, auth) => {
   const { courseID, goalID, title, description, language, duration } =
     await request.json();
 
@@ -43,4 +44,4 @@ export async function POST(request) {
     console.error("Error updating course:", error);
     return Response.json({ message: "Error updating course" }, { status: 500 });
   }
-}
+});

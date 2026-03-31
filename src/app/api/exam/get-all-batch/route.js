@@ -1,6 +1,7 @@
 import { getAllBatches } from "@/src/util/institute/batchControllers";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function GET(req, res) {
+export const GET = withAuth(async (req, res, _context, auth) => {
   try {
     const batches = await getAllBatches();
     return Response.json(batches);
@@ -10,4 +11,4 @@ export async function GET(req, res) {
       message: error.message,
     });
   }
-}
+});

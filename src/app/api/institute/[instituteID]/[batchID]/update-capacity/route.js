@@ -1,6 +1,7 @@
 import { updateBatchCapacity } from "@/src/util/institute/batchControllers";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function POST(req, { params }) {
+export const POST = withAuth(async (req, { params }, auth) => {
   const { batchID } = await params;
   const { capacity } = await req.json();
   try {
@@ -9,4 +10,4 @@ export async function POST(req, { params }) {
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });
   }
-}
+});

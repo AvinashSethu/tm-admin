@@ -1,6 +1,7 @@
 import { unlinkResource } from "@/src/util/courses/updateLesson";
+import { withAuth } from "@/src/lib/withAuth";
 
-export async function POST(request) {
+export const POST = withAuth(async (request, _context, auth) => {
   const { lessonID, courseID, resourceID } = await request.json();
   if (!lessonID || !courseID || !resourceID) {
     return Response.json(
@@ -18,4 +19,4 @@ export async function POST(request) {
       { status: 500 }
     );
   }
-}
+});
