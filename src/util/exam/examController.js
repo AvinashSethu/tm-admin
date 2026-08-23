@@ -176,8 +176,22 @@ export async function getExamByID(examID) {
   };
 
   try {
-    const result = await dynamoDB.send(new QueryCommand(params));
-    if (!result.Items || result.Items.length === 0) {
+    // The EXAMS partition holds every exam; the pKey filter only applies
+    // within each 1MB page, so keep paging until the exam is found.
+    let exam = null;
+    let lastKey = undefined;
+    do {
+      const queryParams = { ...params };
+      if (lastKey) queryParams.ExclusiveStartKey = lastKey;
+      const result = await dynamoDB.send(new QueryCommand(queryParams));
+      if (result.Items && result.Items.length > 0) {
+        exam = result.Items[0];
+        break;
+      }
+      lastKey = result.LastEvaluatedKey;
+    } while (lastKey);
+
+    if (!exam) {
       return {
         success: false,
         message: "Exam not found",
@@ -187,9 +201,9 @@ export async function getExamByID(examID) {
       success: true,
       message: "Exam retrieved successfully",
       data: {
-        ...result.Items[0],
-        id: result.Items[0].pKey.split("#")[1],
-        goalID: result.Items[0].sKey.split("@")[2],
+        ...exam,
+        id: exam.pKey.split("#")[1],
+        goalID: exam.sKey.split("@")[2],
         pKey: undefined,
         sKey: undefined,
         "GSI1-pKey": undefined,
@@ -220,11 +234,21 @@ export async function getExamByGoalID({ goalID, type }) {
   };
 
   try {
-    const result = await dynamoDB.send(new QueryCommand(params));
+    // Handle pagination to get all results
+    let allItems = [];
+    let lastKey = undefined;
+    do {
+      const queryParams = { ...params };
+      if (lastKey) queryParams.ExclusiveStartKey = lastKey;
+      const result = await dynamoDB.send(new QueryCommand(queryParams));
+      allItems = allItems.concat(result.Items || []);
+      lastKey = result.LastEvaluatedKey;
+    } while (lastKey);
+
     return {
       success: true,
       message: "Exam retrieved successfully",
-      data: result.Items.map((item) => ({
+      data: allItems.map((item) => ({
         id: item.pKey.split("#")[1],
         goalID: item.sKey.split("@")[2],
         isLive: item.isLive,

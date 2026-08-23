@@ -220,7 +220,16 @@ export async function getExamGroupByGoalID(goalID) {
     // ProjectionExpression: "pKey, title, isLive, mCoin, isProTest, examList",
   };
   try {
-    const { Items } = await dynamoDB.send(new QueryCommand(params));
+    // Handle pagination to get all results
+    let Items = [];
+    let lastKey = undefined;
+    do {
+      const queryParams = { ...params };
+      if (lastKey) queryParams.ExclusiveStartKey = lastKey;
+      const result = await dynamoDB.send(new QueryCommand(queryParams));
+      Items = Items.concat(result.Items || []);
+      lastKey = result.LastEvaluatedKey;
+    } while (lastKey);
 
     // For each group, fetch the exam count
     const groupsWithCount = await Promise.all(
@@ -273,8 +282,22 @@ export async function getExamGroup(examGroupID) {
     },
   };
   try {
-    const { Items } = await dynamoDB.send(new QueryCommand(params));
-    if (Items.length === 0) {
+    // The pKey filter only applies within each 1MB page — keep paging
+    // until the group is found.
+    let group = null;
+    let lastKey = undefined;
+    do {
+      const queryParams = { ...params };
+      if (lastKey) queryParams.ExclusiveStartKey = lastKey;
+      const result = await dynamoDB.send(new QueryCommand(queryParams));
+      if (result.Items && result.Items.length > 0) {
+        group = result.Items[0];
+        break;
+      }
+      lastKey = result.LastEvaluatedKey;
+    } while (lastKey);
+
+    if (!group) {
       return {
         success: false,
         message: "Exam group not found",
@@ -284,10 +307,10 @@ export async function getExamGroup(examGroupID) {
       success: true,
       message: "Exam retrieved successfully",
       data: {
-        id: Items[0].pKey.split("#")[1],
-        goalID: Items[0].sKey.split("@")[1],
-        isLive: Items[0].isLive,
-        ...Items[0],
+        id: group.pKey.split("#")[1],
+        goalID: group.sKey.split("@")[1],
+        isLive: group.isLive,
+        ...group,
         pKey: undefined,
         sKey: undefined,
         "GSI1-pKey": undefined,
@@ -317,7 +340,17 @@ export async function getExamListByGroupID(groupID) {
     },
   };
   try {
-    const { Items } = await dynamoDB.send(new QueryCommand(params));
+    // Handle pagination to get all results
+    let Items = [];
+    let lastKey = undefined;
+    do {
+      const queryParams = { ...params };
+      if (lastKey) queryParams.ExclusiveStartKey = lastKey;
+      const result = await dynamoDB.send(new QueryCommand(queryParams));
+      Items = Items.concat(result.Items || []);
+      lastKey = result.LastEvaluatedKey;
+    } while (lastKey);
+
     return {
       success: true,
       message: "Exam list retrieved successfully",
