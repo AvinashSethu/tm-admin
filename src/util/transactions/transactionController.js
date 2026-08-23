@@ -103,11 +103,26 @@ export async function refundTransaction(paymentId, amount, transactionId) {
         },
       };
 
-      const scanResult = await dynamoDB.send(new ScanCommand(scanParams));
-      if (!scanResult.Items || scanResult.Items.length === 0) {
+      // The filter applies within each 1MB page of the (large) users table —
+      // paginate until the payment is found or the table is exhausted.
+      let lastKey;
+      do {
+        const scanResult = await dynamoDB.send(
+          new ScanCommand({
+            ...scanParams,
+            ...(lastKey && { ExclusiveStartKey: lastKey }),
+          })
+        );
+        if (scanResult.Items && scanResult.Items.length > 0) {
+          transaction = scanResult.Items[0];
+          break;
+        }
+        lastKey = scanResult.LastEvaluatedKey;
+      } while (lastKey);
+
+      if (!transaction) {
         throw new Error("Transaction not found");
       }
-      transaction = scanResult.Items[0];
     }
 
     // Check if transaction is eligible for refund

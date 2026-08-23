@@ -49,6 +49,10 @@ export async function POST(request) {
     }
 
     const params = {
+      // WARNING: intentionally hardcoded. Production admin accounts live in
+      // the DEV-named table — TMA-PRO-admin does not exist (verified
+      // 2026-08-24). Switching this to `${AWS_DB_NAME}admin` without
+      // migrating the accounts will lock every admin out.
       TableName: "TMA-DEV-admin",
       FilterExpression: "email = :email",
       ExpressionAttributeValues: { ":email": email },
